@@ -28,4 +28,12 @@ export class EventService{
 
 
     }
+    async getAllEvents(): Promise<Result<IEvent[], EventError>>{
+        try {
+            const events = await this.repo.getAll();
+            return Ok(events);
+        } catch  {
+            return Err(UnexpectedDependencyError("failed to fetch"))
+        }
+    }
 }

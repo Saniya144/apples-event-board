@@ -37,6 +37,7 @@ export class InMemoryEventRepository implements IEventRepository{
         }
     }
     async getAll(): Promise<IEvent[]> {
-        return this.events;
-    }
+        return this.eventsl
+    } 
+
 }

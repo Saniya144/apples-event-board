@@ -30,11 +30,11 @@ class EventController implements IEventController{
                 const error= result.value;
                 const status =  this.mapErrorStatus(error);
                 res.status(status).render("partials/error",{
-                    error: error.message
+                    message: error.message
                 });
                 return
             }
-            res.redirect(`/events/${result.value.id}`);
+            res.redirect("/home");
        }
         
 

@@ -36,4 +36,8 @@ export class InMemoryEventRepository implements IEventRepository{
             return Err(UnexpectedDependencyError("Unable to update event"));
         }
     }
+    async getAll(): Promise<IEvent[]> {
+        return this.events;
+    } 
+
 }

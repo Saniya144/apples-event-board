@@ -34,6 +34,7 @@ function sessionStore(req: Request): AppSessionStore {
 
 class ExpressApp implements IApp {
   private readonly app: express.Express;
+  
 
   constructor(
     private readonly authController: IAuthController,
@@ -250,12 +251,12 @@ class ExpressApp implements IApp {
           return;
         }
 
-        const browserSession = recordPageView(sessionStore(req));
-        this.logger.info(`GET /home for ${browserSession.browserLabel}`);
-        res.render("home", { session: browserSession, pageError: null });
-      }),
+        const session = recordPageView(sessionStore(req));
+        
+        await this.eventController.getAllEvents(res,session);
+      })
     );
-
+    
     this.app.get(
       "/events/new",
       asyncHandler(async (req,res)=>{

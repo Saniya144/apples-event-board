@@ -17,6 +17,8 @@ import {
   touchAppSession,
 } from "./session/AppSession";
 import { ILoggingService } from "./service/LoggingService";
+import { IEvent } from "./model/Event";
+import { IEventController } from "./controller/EventController";
 
 type AsyncRequestHandler = RequestHandler;
 
@@ -35,7 +37,8 @@ class ExpressApp implements IApp {
 
   constructor(
     private readonly authController: IAuthController,
-    private readonly logger: ILoggingService,
+    private readonly eventController: IEventController,
+    private readonly logger: ILoggingService
   ) {
     this.app = express();
     this.registerMiddleware();
@@ -253,6 +256,27 @@ class ExpressApp implements IApp {
       }),
     );
 
+    this.app.get(
+      "/events/new",
+      asyncHandler(async (req,res)=>{
+        if(!this.requireAuthenticated(req,res)) return;
+        const session = recordPageView(sessionStore(req));
+        res.render("events/new",{session})
+      })
+    );
+    this.app.post(
+      "/events/new", 
+      asyncHandler(async (req, res) => {
+        if(!this.requireAuthenticated(req,res)){
+          return;
+        }
+        const session = touchAppSession(sessionStore(req));
+        await this.eventController.createEventFromForm(res,req.body,session
+        )
+      })
+       
+    )
+
     // ── Error handler ────────────────────────────────────────────────
 
     this.app.use((err: unknown, _req: Request, res: Response, _next: (value?: unknown) => void) => {
@@ -272,7 +296,9 @@ class ExpressApp implements IApp {
 
 export function CreateApp(
   authController: IAuthController,
-  logger: ILoggingService,
+  eventController: IEventController,
+  logger: ILoggingService
+  
 ): IApp {
-  return new ExpressApp(authController, logger);
+  return new ExpressApp(authController, eventController,logger);
 }

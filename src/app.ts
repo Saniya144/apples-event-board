@@ -1,12 +1,11 @@
+import { rsvpRouter } from "./rsvp/rsvp.routes";
+import { organizerRouter } from "./organizer/organizer.routes";
 import path from "node:path";
 import express, { Request, RequestHandler, Response } from "express";
 import session from "express-session";
 import Layouts from "express-ejs-layouts";
 import { IAuthController } from "./auth/AuthController";
-import {
-  AuthenticationRequired,
-  AuthorizationRequired,
-} from "./auth/errors";
+import { AuthenticationRequired, AuthorizationRequired } from "./auth/errors";
 import type { UserRole } from "./auth/User";
 import { IApp } from "./contracts";
 import {
@@ -21,7 +20,11 @@ import { ILoggingService } from "./service/LoggingService";
 type AsyncRequestHandler = RequestHandler;
 
 function asyncHandler(fn: AsyncRequestHandler) {
-  return function wrapped(req: Request, res: Response, next: (value?: unknown) => void) {
+  return function wrapped(
+    req: Request,
+    res: Response,
+    next: (value?: unknown) => void,
+  ) {
     return Promise.resolve(fn(req, res, next)).catch(next);
   };
 }
@@ -158,8 +161,14 @@ class ExpressApp implements IApp {
       "/login",
       asyncHandler(async (req, res) => {
         const email = typeof req.body.email === "string" ? req.body.email : "";
-        const password = typeof req.body.password === "string" ? req.body.password : "";
-        await this.authController.loginFromForm(res, email, password, sessionStore(req));
+        const password =
+          typeof req.body.password === "string" ? req.body.password : "";
+        await this.authController.loginFromForm(
+          res,
+          email,
+          password,
+          sessionStore(req),
+        );
       }),
     );
 
@@ -175,7 +184,9 @@ class ExpressApp implements IApp {
     this.app.get(
       "/admin/users",
       asyncHandler(async (req, res) => {
-        if (!this.requireRole(req, res, ["admin"], "Only Admin can manage users.")) {
+        if (
+          !this.requireRole(req, res, ["admin"], "Only Admin can manage users.")
+        ) {
           return;
         }
 
@@ -187,11 +198,14 @@ class ExpressApp implements IApp {
     this.app.post(
       "/admin/users",
       asyncHandler(async (req, res) => {
-        if (!this.requireRole(req, res, ["admin"], "Only Admin can manage users.")) {
+        if (
+          !this.requireRole(req, res, ["admin"], "Only Admin can manage users.")
+        ) {
           return;
         }
 
-        const roleValue = typeof req.body.role === "string" ? req.body.role : "user";
+        const roleValue =
+          typeof req.body.role === "string" ? req.body.role : "user";
         const role: UserRole =
           roleValue === "admin" || roleValue === "staff" || roleValue === "user"
             ? roleValue
@@ -202,8 +216,11 @@ class ExpressApp implements IApp {
           {
             email: typeof req.body.email === "string" ? req.body.email : "",
             displayName:
-              typeof req.body.displayName === "string" ? req.body.displayName : "",
-            password: typeof req.body.password === "string" ? req.body.password : "",
+              typeof req.body.displayName === "string"
+                ? req.body.displayName
+                : "",
+            password:
+              typeof req.body.password === "string" ? req.body.password : "",
             role,
           },
           touchAppSession(sessionStore(req)),
@@ -214,7 +231,9 @@ class ExpressApp implements IApp {
     this.app.post(
       "/admin/users/:id/delete",
       asyncHandler(async (req, res) => {
-        if (!this.requireRole(req, res, ["admin"], "Only Admin can manage users.")) {
+        if (
+          !this.requireRole(req, res, ["admin"], "Only Admin can manage users.")
+        ) {
           return;
         }
 
@@ -222,7 +241,8 @@ class ExpressApp implements IApp {
         const currentUser = getAuthenticatedUser(sessionStore(req));
         if (!currentUser) {
           res.status(401).render("partials/error", {
-            message: AuthenticationRequired("Please log in to continue.").message,
+            message: AuthenticationRequired("Please log in to continue.")
+              .message,
             layout: false,
           });
           return;
@@ -253,16 +273,47 @@ class ExpressApp implements IApp {
       }),
     );
 
+    // ── RSVP routes ──────────────────────────────────────────────────
+    this.app.use(
+      "/rsvps",
+      asyncHandler(async (req, res, next) => {
+        if (!this.requireAuthenticated(req, res)) return;
+        next();
+      }),
+    );
+    
+    this.app.use("/rsvps", rsvpRouter);
+
+    // ── Organizer routes ─────────────────────────────────────────────
+    this.app.use(
+      "/organizer",
+    asyncHandler(async (req, res, next) => {
+      if (!this.requireAuthenticated(req, res)) return;
+      next();
+    }),
+  );
+
+  this.app.use("/organizer", organizerRouter);
+
+
     // ── Error handler ────────────────────────────────────────────────
 
-    this.app.use((err: unknown, _req: Request, res: Response, _next: (value?: unknown) => void) => {
-      const message = err instanceof Error ? err.message : "Unexpected server error.";
-      this.logger.error(message);
-      res.status(500).render("partials/error", {
-        message: "Unexpected server error.",
-        layout: false,
-      });
-    });
+    this.app.use(
+      (
+        err: unknown,
+        _req: Request,
+        res: Response,
+        _next: (value?: unknown) => void,
+      ) => {
+        const message =
+          err instanceof Error ? err.message : "Unexpected server error.";
+        this.logger.error(message);
+        res.status(500).render("partials/error", {
+          message: "Unexpected server error.",
+          layout: false,
+        });
+      },
+    );
   }
 
   getExpressApp(): express.Express {

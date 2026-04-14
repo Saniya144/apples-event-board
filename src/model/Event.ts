@@ -9,6 +9,6 @@ export interface IEvent{
     location: string;
     startTime: Date;
     endTime : Date;
-    organzierID: string;
+    organizerID: string;
     status: EventStatus;
 }

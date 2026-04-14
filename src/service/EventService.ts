@@ -20,7 +20,7 @@ export class EventService{
             location: input.location,
             startTime: begin,
             endTime: end,
-            organzierID: user.id,
+            organizerID: user.id,
             status: "draft",
         };
         return await this.repo.create(event);

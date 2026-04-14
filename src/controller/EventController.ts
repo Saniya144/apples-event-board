@@ -38,7 +38,7 @@ class EventController implements IEventController {
       });
       return;
     }
-    res.redirect(`/events/${result.value.id}`);
+    res.redirect(`/home`);
   }
 
   async getAllEvents(res: Response,session:IAppBrowserSession): Promise<void> {

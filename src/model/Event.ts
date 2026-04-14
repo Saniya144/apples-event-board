@@ -11,4 +11,5 @@ export interface IEvent{
     endTime : Date;
     organizerID: string;
     status: EventStatus;
+    capacity?: number; 
 }

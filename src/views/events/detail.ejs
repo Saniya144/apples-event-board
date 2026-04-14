@@ -1,0 +1,84 @@
+<div class="max-w-4xl mx-auto p-6 space-y-6">
+  <div class="bg-white rounded-xl shadow p-6 space-y-4">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-bold text-slate-900"><%= event.title %></h1>
+        <p class="text-sm text-slate-500 mt-1">
+          Status:
+          <span class="font-medium"><%= event.status %></span>
+        </p>
+      </div>
+      <div class="text-sm text-slate-500">
+        <span class="inline-block rounded-full bg-slate-100 px-3 py-1">
+          <%= event.category %>
+        </span>
+      </div>
+    </div>
+
+    <div class="space-y-2">
+      <p class="text-slate-700"><%= event.description %></p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+      <div class="rounded-lg border p-4">
+        <p class="font-semibold text-slate-800">Location</p>
+        <p class="text-slate-600"><%= event.location %></p>
+      </div>
+
+      <div class="rounded-lg border p-4">
+        <p class="font-semibold text-slate-800">Organizer</p>
+        <p class="text-slate-600"><%= event.organizerName %></p>
+      </div>
+
+      <div class="rounded-lg border p-4">
+        <p class="font-semibold text-slate-800">Starts</p>
+        <p class="text-slate-600"><%= event.startDatetime %></p>
+      </div>
+
+      <div class="rounded-lg border p-4">
+        <p class="font-semibold text-slate-800">Ends</p>
+        <p class="text-slate-600"><%= event.endDatetime %></p>
+      </div>
+
+      <div class="rounded-lg border p-4 md:col-span-2">
+        <p class="font-semibold text-slate-800">Attendance</p>
+        <p class="text-slate-600">
+          <%= event.attendeeCount %>
+          <% if (event.capacity !== null) { %>
+            / <%= event.capacity %>
+          <% } else { %>
+            / no limit
+          <% } %>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow p-6">
+    <h2 class="text-lg font-semibold text-slate-900 mb-4">Actions</h2>
+
+    <div class="flex flex-wrap gap-3">
+      <% if (event.canEdit) { %>
+        <button class="rounded-lg bg-slate-900 text-white px-4 py-2 opacity-60 cursor-not-allowed" disabled>
+          Edit Event
+        </button>
+      <% } %>
+
+      <% if (event.canCancel) { %>
+        <button class="rounded-lg bg-red-600 text-white px-4 py-2 opacity-60 cursor-not-allowed" disabled>
+          Cancel Event
+        </button>
+      <% } %>
+
+      <% if (event.canRsvp) { %>
+        <button class="rounded-lg bg-blue-600 text-white px-4 py-2 opacity-60 cursor-not-allowed" disabled>
+          RSVP
+        </button>
+      <% } %>
+    </div>
+
+    <p class="text-sm text-slate-500 mt-4">
+      Sprint 1 placeholder controls. Buttons become active when Feature 5 and RSVP are wired.
+    </p>
+  </div>
+</div>

@@ -10,6 +10,9 @@ import { CreateEventController } from "./events/EventController";
 import { CreateEventService } from "./events/EventService";
 import { CreateLoggingService } from "./service/LoggingService";
 import type { ILoggingService } from "./service/LoggingService";
+import { EventService } from "./service/EventService";
+import { CreateEventController } from "./controller/EventController";
+import { InMemoryEventRepository } from "./repository/InMemoryEventRepository";
 
 export function createComposedApp(logger?: ILoggingService): IApp {
   const resolvedLogger = logger ?? CreateLoggingService();

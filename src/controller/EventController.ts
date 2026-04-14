@@ -1,3 +1,4 @@
+import { error } from "node:console";
 import { UnexpectedDependencyError } from "../event/errors";
 import { EventError } from "../event/errors";
 import { Err, Result, Ok } from "../lib/result";
@@ -14,6 +15,18 @@ export interface IEventController {
     session: IAppBrowserSession
   ): Promise<void>;
   getAllEvents(res: Response, session: IAppBrowserSession): Promise<void>;
+  getEventByID(
+    res: Response,
+    id: string,
+    session: IAppBrowserSession
+  ): Promise<void>;
+  updateEventFromForm(
+    res: Response,
+    id: string,
+    input: any,
+    session: IAppBrowserSession
+  ): Promise<void>;
+
 }
 
 class EventController implements IEventController {
@@ -55,6 +68,41 @@ class EventController implements IEventController {
       events: result.value,
       
     });
+
+  
+  }
+
+  async getEventByID(res: Response,id:string,session:IAppBrowserSession): Promise<void> {
+    const result = await this.service.getEventByID(id);
+    if (!result.ok||!result.value) {
+      res.status(404).render("partials/error", {
+        message: "Event not found",
+      });
+      return;
+    }
+    res.render("events/edit", {
+      session,
+      event: result.value,
+    });
+  }
+
+  async updateEventFromForm(
+    res: Response,
+    id:string,
+    input: any,
+    session: IAppBrowserSession
+  ): Promise<void> {
+    const user= session.authenticatedUser;
+    const result = await this.service.updateEvent(id,input,user);
+    if (result.ok===false) {
+      const error=result.value;
+      res.status(400).render("partials/error", {
+        message: error.message,
+      });
+      return;
+    }
+   
+    res.redirect(`/home`);
   }
 }
 

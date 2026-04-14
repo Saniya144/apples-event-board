@@ -241,6 +241,7 @@ class ExpressApp implements IApp {
       }),
     );
 
+
     // ── Authenticated home page ──────────────────────────────────────
     // TODO: Replace this placeholder with your project's main page.
 
@@ -260,7 +261,7 @@ class ExpressApp implements IApp {
     this.app.get(
       "/events/new",
       asyncHandler(async (req,res)=>{
-        if(!this.requireAuthenticated(req,res)) return;
+        if(!this.requireRole(req,res,["admin","staff"],"Only admin and staff can make events ")) return;
         const session = recordPageView(sessionStore(req));
         res.render("events/new",{session})
       })
@@ -268,7 +269,7 @@ class ExpressApp implements IApp {
     this.app.post(
       "/events/new", 
       asyncHandler(async (req, res) => {
-        if(!this.requireAuthenticated(req,res)){
+        if(!this.requireRole(req,res,["admin","staff"],"Only admin and staff can make events")){
           return;
         }
         const session = touchAppSession(sessionStore(req));

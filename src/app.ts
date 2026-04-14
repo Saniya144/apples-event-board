@@ -17,7 +17,7 @@ import {
   touchAppSession,
 } from "./session/AppSession";
 import { ILoggingService } from "./service/LoggingService";
-
+import { IEventController } from "./events/EventController";
 type AsyncRequestHandler = RequestHandler;
 
 function asyncHandler(fn: AsyncRequestHandler) {
@@ -35,6 +35,7 @@ class ExpressApp implements IApp {
 
   constructor(
     private readonly authController: IAuthController,
+    private readonly eventController: IEventController,
     private readonly logger: ILoggingService,
   ) {
     this.app = express();
@@ -239,7 +240,32 @@ class ExpressApp implements IApp {
 
     // ── Authenticated home page ──────────────────────────────────────
     // TODO: Replace this placeholder with your project's main page.
+    this.app.get(
+      "/events/:id",
+      asyncHandler(async (req, res) => {
+        if (!this.requireAuthenticated(req, res)) {
+          return;
+        }
 
+        const currentUser = getAuthenticatedUser(sessionStore(req));
+        if (!currentUser) {
+          res.status(401).render("partials/error", {
+            message: AuthenticationRequired("Please log in to continue.").message,
+            layout: false,
+          });
+          return;
+        }
+
+        const browserSession = recordPageView(sessionStore(req));
+
+        await this.eventController.showEventDetail(res, {
+          eventId: typeof req.params.id === "string" ? req.params.id : "",
+          actingUserId: currentUser.userId,
+          actingUserRole: currentUser.role,
+          session: browserSession,
+        });
+      }),
+    );
     this.app.get(
       "/home",
       asyncHandler(async (req, res) => {
@@ -272,7 +298,8 @@ class ExpressApp implements IApp {
 
 export function CreateApp(
   authController: IAuthController,
+  eventController: IEventController,
   logger: ILoggingService,
 ): IApp {
-  return new ExpressApp(authController, logger);
+  return new ExpressApp(authController, eventController, logger);
 }

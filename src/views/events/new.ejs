@@ -1,0 +1,17 @@
+<h1>  Create Event</h1>
+<form action="/events/new" method = "POST">
+  <input name = "title" placeholder="Title" required/>
+  <br /><br />
+  <input name = "location" placeholder="Location" required/>
+  <br /><br />
+  <input type = "datetime-local" name="startTime" required/>
+  <br /><br />
+  <input type = "datetime-local" name="endTime" required/>
+  <br /><br />
+  <input name = "description" placeholder="Description"/>
+  <br /><br />
+  <button type ="submit">Create Event</button>
+
+</form>
+<br />
+<a href="/home">← Back to Dashboard</a>

@@ -1,3 +1,29 @@
+<h1>Event Dashboard</h1>
+
+<a href="/events/new">+ Create Event</a>
+
+<hr />
+
+<h2>All Events</h2>
+
+<% if (events && events.length > 0) { %>
+  <% events.forEach(event => { %>
+    <div>
+      <b><%= event.title %></b><br />
+      <span><%= event.location %></span><br />
+      <span><%= event.startTime %></span><br />
+      <span><%= event.description %></span><br />
+      <span>Created by: <%= event.organizerID %></span><br />
+      <a href="/events/<%= event.id %>/edit">Edit</a>
+      <hr />
+    </div>
+  <% }) %>
+<% } else { %>
+  <p>No events yet</p>
+<% } %>
+
+
+
 <section class="mb-5 p-6 border border-slate-200 rounded-2xl bg-gradient-to-b from-white to-slate-50 shadow-lg">
   <h1 class="text-3xl font-bold text-slate-900 mb-3">Welcome to Project Starter</h1>
   <p class="text-slate-500">

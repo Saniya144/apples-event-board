@@ -7,9 +7,10 @@ export interface IEvent{
     title: string;
     description: string;
     location: string;
+    category: string;
     startTime: Date;
     endTime : Date;
     organizerID: string;
     status: EventStatus;
-    capacity?: number; 
+    capacity?: number;
 }

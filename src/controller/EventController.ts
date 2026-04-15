@@ -26,7 +26,6 @@ export interface IEventController {
     input: any,
     session: IAppBrowserSession
   ): Promise<void>;
-
 }
 
 class EventController implements IEventController {
@@ -54,7 +53,10 @@ class EventController implements IEventController {
     res.redirect(`/home`);
   }
 
-  async getAllEvents(res: Response,session:IAppBrowserSession): Promise<void> {
+  async getAllEvents(
+    res: Response,
+    session: IAppBrowserSession
+  ): Promise<void> {
     const result = await this.service.getAllEvents();
     if (!result.ok) {
       res.status(500).render("partials/error", {
@@ -64,21 +66,40 @@ class EventController implements IEventController {
     }
     res.render("home", {
       session,
-      pageError:null,
+      pageError: null,
       events: result.value,
-      
     });
-
-  
   }
 
-  async getEventByID(res: Response,id:string,session:IAppBrowserSession): Promise<void> {
+  async getEventByID(
+    res: Response,
+    id: string,
+    session: IAppBrowserSession
+  ): Promise<void> {
     const result = await this.service.getEventByID(id);
-    if (!result.ok||!result.value) {
+    if (!result.ok || !result.value) {
       res.status(404).render("partials/error", {
         message: "Event not found",
       });
       return;
+    }
+
+    const user = session.authenticatedUser;
+    const event = result.value;
+    if (!user) {
+      return res.status(401).render("partials/error", {
+        message: "Not authenticated",
+      });
+    }
+
+    if (
+      user.role !== "admin" && 
+      (user.role !== "staff" || event.organizerID !== user.email) 
+    ) 
+    {
+      return res.status(403).render("partials/error", {
+        message: "Not authorized to edit this event",
+      });
     }
     res.render("events/edit", {
       session,
@@ -88,20 +109,20 @@ class EventController implements IEventController {
 
   async updateEventFromForm(
     res: Response,
-    id:string,
+    id: string,
     input: any,
     session: IAppBrowserSession
   ): Promise<void> {
-    const user= session.authenticatedUser;
-    const result = await this.service.updateEvent(id,input,user);
-    if (result.ok===false) {
-      const error=result.value;
+    const user = session.authenticatedUser;
+    const result = await this.service.updateEvent(id, input, user);
+    if (result.ok === false) {
+      const error = result.value;
       res.status(400).render("partials/error", {
         message: error.message,
       });
       return;
     }
-   
+
     res.redirect(`/home`);
   }
 }

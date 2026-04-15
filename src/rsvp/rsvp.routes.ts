@@ -1,15 +1,16 @@
-import { Router } from "express";
+import express from "express";
 import { RSVPController } from "./RSVPController";
 import { RSVPService } from "./RSVPService";
 import { InMemoryRSVPRepository } from "./InMemoryRSVPRepository";
 
-const rsvpRepository = new InMemoryRSVPRepository();
+export const rsvpRepository = new InMemoryRSVPRepository();
 const rsvpService = new RSVPService(rsvpRepository);
 const rsvpController = new RSVPController(rsvpService);
 
-const router = Router();
+export const rsvpRouter = express.Router();
 
-// GET /rsvps/dashboard — full page or HTMX partial
-router.get("/dashboard", rsvpController.getDashboard);
+// GET dashboard
+rsvpRouter.get("/dashboard", rsvpController.getDashboard);
 
-export { router as rsvpRouter, rsvpRepository };
+// POST toggle RSVP (reuses Feature 4's endpoint)
+rsvpRouter.post("/:eventId/toggle", rsvpController.toggleRSVP);

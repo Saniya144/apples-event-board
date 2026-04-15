@@ -118,4 +118,45 @@ describe("GET /rsvps/dashboard", () => {
     expect(res.status).toBe(200);
     expect(res.text).toContain("Waitlisted");
   });
+
+  it("cancels an RSVP when cancel button is clicked", async () => {
+    const userId = "user-to-cancel";
+
+    // Seed an event and RSVP
+    rsvpRepository.upsertEventStub({
+      id: "cancel-test-event",
+      title: "Event to Cancel",
+      location: "Test Location",
+      category: "test",
+      status: "published",
+      startDatetime: new Date("2025-06-01T10:00:00Z"),
+      endDatetime: new Date("2025-06-01T12:00:00Z"),
+    });
+
+    await rsvpRepository.save({
+      id: "rsvp-to-cancel",
+      eventId: "cancel-test-event",
+      userId: userId,
+      status: "going",
+      createdAt: new Date(),
+    });
+
+    const app = buildApp(userId);
+
+    // Verify RSVP exists initially
+    const beforeRes = await request(app).get("/rsvps/dashboard");
+    expect(beforeRes.text).toContain("Event to Cancel");
+
+    // Cancel the RSVP
+    const cancelRes = await request(app)
+      .post("/rsvps/cancel-test-event/toggle")
+      .set("hx-request", "true");
+
+    expect(cancelRes.status).toBe(200);
+
+    // Verify RSVP is gone from dashboard
+    const afterRes = await request(app).get("/rsvps/dashboard");
+    expect(afterRes.text).not.toContain("Event to Cancel");
+  });
+
 });

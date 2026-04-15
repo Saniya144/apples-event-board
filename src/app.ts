@@ -1,3 +1,5 @@
+import { organizerRouter } from "./organizer/organizer.routes";
+import { rsvpRouter } from "./rsvp/rsvp.routes";
 import path from "node:path";
 import express, { Request, RequestHandler, Response } from "express";
 import session from "express-session";
@@ -406,6 +408,21 @@ class ExpressApp implements IApp {
         });
       }),
     );
+
+    this.app.use("/rsvps", rsvpRouter);
+
+    // ── Organizer routes ─────────────────────────────────────────────
+
+    // ── Organizer routes ─────────────────────────────────────────────
+    this.app.use(
+      "/organizer",
+      asyncHandler(async (req, res, next) => {
+        if (!this.requireAuthenticated(req, res)) return;
+        next();
+      }),
+    );
+
+    this.app.use("/organizer", organizerRouter);
 
     // ── Error handler ────────────────────────────────────────────────
 

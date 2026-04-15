@@ -80,7 +80,8 @@ export class EventService {
     const existingResult = await this.repo.findById(id);
 
     if (!existingResult.ok) {
-      return Err(EventDependencyError(existingResult.value.message));
+      const error = existingResult.value as EventError;
+      return Err(EventDependencyError(error.message));
     }
 
     if (!existingResult.value) {

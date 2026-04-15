@@ -1,7 +1,7 @@
 import type { Response } from "express";
 import type { UserRole } from "../auth/User";
 import type { IAppBrowserSession } from "../session/AppSession";
-import { type EventError } from "../event/errors";
+import { type EventError } from "../events/errors";
 import { EventService } from "../service/EventService";
 
 export interface ShowEventDetailInput {
@@ -46,8 +46,8 @@ class EventController implements IEventController {
   constructor(private readonly service: EventService) {}
 
   private mapErrorStatus(error: EventError): number {
-    if (error.type === "EventNotFound") return 404;
-    if (error.type === "UnexpectedDependencyError") return 400;
+    if (error.name === "EventNotFoundError") return 404;
+    if (error.name === "UnexpectedDependencyError") return 400;
     return 500;
   }
 
@@ -60,7 +60,7 @@ class EventController implements IEventController {
     const result = await this.service.createEvent(input, user);
 
     if (!result.ok) {
-      const error = result.value;
+      const error = result.value as EventError;
       const status = this.mapErrorStatus(error);
       res.status(status).render("partials/error", {
         message: error.message,
@@ -146,7 +146,7 @@ class EventController implements IEventController {
     const result = await this.service.updateEvent(id, input, user);
 
     if (!result.ok) {
-      const error = result.value;
+      const error = result.value as EventError;
       res.status(400).render("partials/error", {
         message: error.message,
         layout: false,

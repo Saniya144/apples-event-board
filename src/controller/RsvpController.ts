@@ -1,6 +1,7 @@
 import type { Response } from "express";
 import type { IRsvpService } from "../rsvp/RsvpService";
 import type { ILoggingService } from "../service/LoggingService";
+import { Err } from "../lib/result";
 
 export interface IRsvpController {
   toggleRsvpFromForm(
@@ -24,9 +25,10 @@ class RsvpController implements IRsvpController {
     const result = await this.rsvpService.toggleRSVP(eventId, userId);
 
     if (!result.ok) {
-      this.logger.warn(`RSVP toggle failed for event ${eventId}: ${result.value.message}`);
+      const error = result.value as Error;
+      this.logger.warn(`RSVP toggle failed for event ${eventId}: ${error.message}`);
       res.status(400).render("partials/error", {
-        message: result.value.message,
+        message: error.message,
         layout: false,
       });
       return;

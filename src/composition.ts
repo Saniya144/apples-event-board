@@ -7,12 +7,12 @@ import { CreateApp } from "./app";
 import type { IApp } from "./contracts";
 
 import { CreateInMemoryEventRepository } from "./repository/InMemoryEventRepository";
-import { CreateInMemoryRsvpRepository } from "./rsvp/InMemoryRsvpRepository";
+import { CreateInMemoryRsvpRepository } from "./repository/InMemoryRsvpRepository";
 import { CreateEventController } from "./controller/EventController";
 import { CreateRsvpController } from "./controller/RsvpController";
 
 import { EventService } from "./service/EventService";
-import { CreateRsvpService } from "./rsvp/RsvpService";
+import { CreateRsvpService } from "./service/RsvpService";
 
 import { CreateLoggingService } from "./service/LoggingService";
 import type { ILoggingService } from "./service/LoggingService";

@@ -1,9 +1,9 @@
 import { Result, Ok, Err } from "../lib/result";
 import type { IEventRepository } from "../repository/EventRepository";
 import type { IEvent } from "../model/Event";
-import type { IRsvpRepository } from "./RsvpRepository";
-import type { RsvpStatus } from "./Rsvp";
-import { EventNotFoundError, RsvpNotAllowedError } from "./errors";
+import type { IRsvpRepository } from "../repository/RsvpRepository";
+import type { RsvpStatus } from "../model/Rsvp";
+import { EventNotFoundError, RsvpNotAllowedError } from "../rsvp/errors";
 
 export type RsvpServiceError = EventNotFoundError | RsvpNotAllowedError;
 

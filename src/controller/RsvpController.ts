@@ -1,5 +1,5 @@
 import type { Response } from "express";
-import type { IRsvpService } from "../rsvp/RsvpService";
+import type { IRsvpService } from "../service/RsvpService";
 import type { ILoggingService } from "../service/LoggingService";
 import { Err } from "../lib/result";
 

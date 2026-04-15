@@ -16,6 +16,11 @@ export class EventService {
       return Err(UnexpectedDependencyError("location is required"));
     const begin = new Date(input.startTime);
     const end = new Date(input.endTime);
+
+    if (begin < new Date()) {
+      return Err(UnexpectedDependencyError("Cannot create event in the past"));
+    }
+
     if (end < begin)
       return Err(UnexpectedDependencyError("invalid end is before start"));
     const event: IEvent = {
@@ -54,8 +59,9 @@ export class EventService {
       return Err(UnexpectedDependencyError("not authorized "));
     if (event.status === "cancelled")
       return Err(UnexpectedDependencyError("cant edit cancelled event"));
-    if (event.endTime < new Date())
-      return Err(UnexpectedDependencyError("cant edit older event"));
+    if (event.startTime < new Date()) {
+      return Err(UnexpectedDependencyError("Cannot edit past event"));
+    }
     if (!input.title || input.title.trim() === "")
       return Err(UnexpectedDependencyError("title is required"));
     if (!input.location || input.location.trim() === "")
@@ -63,6 +69,9 @@ export class EventService {
 
     const begin = new Date(input.startTime);
     const end = new Date(input.endTime);
+    if (begin < new Date()) {
+      return Err(UnexpectedDependencyError("Cannot set event to past time"));
+    }
     if (end < begin)
       return Err(UnexpectedDependencyError("invalid end is before start"));
     const updatedEvent: IEvent = {

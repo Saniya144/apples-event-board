@@ -22,7 +22,7 @@ export interface IEventController {
   getAllEvents(
     res: Response,
     session: IAppBrowserSession,
-    filters: { category?: string; date?: string }
+    filters: { category?: string; date?: string },
   ): Promise<void>;
 
   searchEvents(
@@ -85,7 +85,7 @@ class EventController implements IEventController {
   async getAllEvents(
     res: Response,
     session: IAppBrowserSession,
-    filters: { category?: string; date?: string }
+    filters: { category?: string; date?: string },
   ): Promise<void> {
     const result = await this.service.getFilteredPublishedEvents(filters);
 
@@ -102,6 +102,7 @@ class EventController implements IEventController {
       pageError: null,
       events: result.value,
       filters,
+      searchQuery: ""
     });
   }
 

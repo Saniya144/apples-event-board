@@ -26,6 +26,18 @@
   <button type="submit">Filter</button>
 </form>
 
+<form action="/events/search" method="GET">
+  <label for="q">Search:</label>
+  <input
+    type="text"
+    id="q"
+    name="q"
+    placeholder="Search events"
+    value="<%= searchQuery || '' %>"
+  />
+  <button type="submit">Search</button>
+</form>
+
 <hr />
 
 <% if (events && events.length > 0) { %>

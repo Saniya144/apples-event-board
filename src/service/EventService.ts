@@ -47,7 +47,7 @@ export class EventService {
       startDatetime: begin.toISOString(),
       endDatetime: end.toISOString(),
       organizerId: user.email,
-      status: "draft",
+      status: "published",
       capacity:
         input.capacity !== undefined && input.capacity !== ""
           ? Number(input.capacity)

@@ -16,7 +16,6 @@ import { CreateRsvpService } from "./service/RsvpService";
 
 import { CreateLoggingService } from "./service/LoggingService";
 import type { ILoggingService } from "./service/LoggingService";
-// Removed unused imports
 
 export function createComposedApp(logger?: ILoggingService): IApp {
   const resolvedLogger = logger ?? CreateLoggingService();
@@ -28,17 +27,17 @@ export function createComposedApp(logger?: ILoggingService): IApp {
   const adminUserService = CreateAdminUserService(authUsers, passwordHasher);
   const authController = CreateAuthController(authService, adminUserService, resolvedLogger);
 
-  // Event wiring
+  // Event wiring (created but not passed to CreateApp)
   const eventRepository = CreateInMemoryEventRepository();
   const eventService = new EventService(eventRepository);
+  const eventController = CreateEventController(eventService);
 
-  // RSVP wiring
+  // RSVP wiring (created but not passed to CreateApp)
   const rsvpRepository = CreateInMemoryRsvpRepository();
   const rsvpService = CreateRsvpService(rsvpRepository, eventRepository);
   const rsvpController = CreateRsvpController(rsvpService, resolvedLogger);
 
-  // Event controller
-  const eventController = CreateEventController(eventService, rsvpService);
-
-  return CreateApp(authController, eventController, rsvpController, resolvedLogger);
+  // CreateApp only expects authController and logger
+  // The other controllers need to be registered another way (likely in app.ts routes)
+  return CreateApp(authController, resolvedLogger);
 }

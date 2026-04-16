@@ -34,7 +34,7 @@ export class EventService {
       startTime: begin,
       endTime: end,
       organizerID: user.email,
-      status: "draft",
+      status: "published",
     };
     return await this.repo.create(event);
   }

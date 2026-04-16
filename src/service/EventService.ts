@@ -127,6 +127,41 @@ export class EventService {
     }
   }
 
+  async searchPublishedUpcomingEvents(
+    query?: string
+  ): Promise<Result<IEvent[], EventError>> {
+    try {
+      const events = await this.repo.getAll();
+      const now = new Date();
+
+      let filtered = events.filter((event) => {
+        return (
+          event.status === "published" &&
+          new Date(event.startDatetime) >= now
+        );
+      });
+
+      if (!query || query.trim() === "") {
+        return Ok(filtered);
+      }
+
+      const q = query.trim().toLowerCase();
+
+      filtered = filtered.filter((event) => {
+        return (
+          event.title.toLowerCase().includes(q) ||
+          event.description.toLowerCase().includes(q) ||
+          event.location.toLowerCase().includes(q) ||
+          event.category.toLowerCase().includes(q)
+        );
+      });
+
+      return Ok(filtered);
+    } catch {
+      return Err(EventDependencyError("Failed to search events."));
+    }
+  }
+
   async getEventByID(id: string): Promise<Result<IEvent | null, EventError>> {
     return await this.repo.findById(id);
   }

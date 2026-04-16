@@ -10,6 +10,12 @@ export interface ShowEventDetailInput {
   actingUserRole: UserRole;
   session: IAppBrowserSession;
 }
+export interface LifecycleEventInput {
+  eventId: string;
+  actingUserId: string;
+  actingUserRole: UserRole;
+  session: IAppBrowserSession;
+}
 
 export interface IEventController {
   createEventFromForm(
@@ -39,6 +45,16 @@ export interface IEventController {
     id: string,
     input: any,
     session: IAppBrowserSession
+  ): Promise<void>;
+
+  publishEvent(
+    res: Response,
+    input: LifecycleEventInput
+  ): Promise<void>;
+
+  cancelEvent(
+    res: Response,
+    input: LifecycleEventInput
   ): Promise<void>;
 }
 
@@ -173,6 +189,73 @@ class EventController implements IEventController {
     }
 
     res.redirect("/home");
+  }
+  async publishEvent(
+    res: Response,
+    input: LifecycleEventInput
+  ): Promise<void> {
+    const result = await this.service.publishEvent({
+      eventId: input.eventId,
+      actingUserId: input.actingUserId,
+      actingUserRole: input.actingUserRole,
+    });
+
+    if (result.ok === false) {
+      const error = result.value as EventError;
+      const status =
+        error.name === "EventNotFoundError"
+          ? 404
+          : error.name === "EventAuthorizationError" ||
+            error.name === "EventStateError" ||
+            error.name === "EventValidationError"
+          ? 400
+          : 500;
+
+      res.status(status).render("partials/error", {
+        message: error.message,
+        layout: false,
+      });
+      return;
+    }
+
+    res.status(200).render("events/partials/lifecycle-controls", {
+      event: result.value,
+      layout: false,
+    });
+  }
+
+  async cancelEvent(
+    res: Response,
+    input: LifecycleEventInput
+  ): Promise<void> {
+    const result = await this.service.cancelEvent({
+      eventId: input.eventId,
+      actingUserId: input.actingUserId,
+      actingUserRole: input.actingUserRole,
+    });
+
+    if (result.ok === false) {
+      const error = result.value as EventError;
+      const status =
+        error.name === "EventNotFoundError"
+          ? 404
+          : error.name === "EventAuthorizationError" ||
+            error.name === "EventStateError" ||
+            error.name === "EventValidationError"
+          ? 400
+          : 500;
+
+      res.status(status).render("partials/error", {
+        message: error.message,
+        layout: false,
+      });
+      return;
+    }
+
+    res.status(200).render("events/partials/lifecycle-controls", {
+      event: result.value,
+      layout: false,
+    });
   }
 }
 

@@ -388,6 +388,59 @@ class ExpressApp implements IApp {
         });
       }),
     );
+    this.app.post(
+      "/events/:id/publish",
+      asyncHandler(async (req, res) => {
+        if (!this.requireAuthenticated(req, res)) {
+          return;
+        }
+
+        const currentUser = getAuthenticatedUser(sessionStore(req));
+        if (!currentUser) {
+          res.status(401).render("partials/error", {
+            message: AuthenticationRequired("Please log in to continue.").message,
+            layout: false,
+          });
+          return;
+        }
+
+        const session = touchAppSession(sessionStore(req));
+
+        await this.eventController.publishEvent(res, {
+          eventId: typeof req.params.id === "string" ? req.params.id : "",
+          actingUserId: currentUser.userId,
+          actingUserRole: currentUser.role,
+          session,
+        });
+      })
+    );
+
+    this.app.post(
+      "/events/:id/cancel",
+      asyncHandler(async (req, res) => {
+        if (!this.requireAuthenticated(req, res)) {
+          return;
+        }
+
+        const currentUser = getAuthenticatedUser(sessionStore(req));
+        if (!currentUser) {
+          res.status(401).render("partials/error", {
+            message: AuthenticationRequired("Please log in to continue.").message,
+            layout: false,
+          });
+          return;
+        }
+
+        const session = touchAppSession(sessionStore(req));
+
+        await this.eventController.cancelEvent(res, {
+          eventId: typeof req.params.id === "string" ? req.params.id : "",
+          actingUserId: currentUser.userId,
+          actingUserRole: currentUser.role,
+          session,
+        });
+      })
+    );
 
     // ── Error handler ────────────────────────────────────────────────
 

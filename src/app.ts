@@ -308,6 +308,20 @@ class ExpressApp implements IApp {
     );
 
     this.app.get(
+      "/events/search",
+      asyncHandler(async (req, res) => {
+        if (!this.requireAuthenticated(req, res)) {
+          return;
+        }
+
+        const session = recordPageView(sessionStore(req));
+        const q = typeof req.query.q === "string" ? req.query.q : "";
+
+        await this.eventController.searchEvents(res, session, q);
+      })
+    );
+
+    this.app.get(
       "/events/new",
       asyncHandler(async (req, res) => {
         if (

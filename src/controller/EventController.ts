@@ -141,7 +141,7 @@ class EventController implements IEventController {
       actingUserRole: input.actingUserRole,
     });
 
-    if (result.ok == false) {
+    if (result.ok === false) {
       switch (result.value.name) {
         case "EventValidationError":
           res.status(400).render("partials/error", {
@@ -218,7 +218,7 @@ class EventController implements IEventController {
       return;
     }
 
-    res.status(200).render("events/partials/lifecycle-controls", {
+    res.status(200).render("../partials/lifecycle-controls", {
       event: result.value,
       layout: false,
     });
@@ -252,7 +252,7 @@ class EventController implements IEventController {
       return;
     }
 
-    res.status(200).render("events/partials/lifecycle-controls", {
+    res.status(200).render("../partials/lifecycle-controls", {
       event: result.value,
       layout: false,
     });

@@ -68,6 +68,39 @@ export class EventService {
     }
   }
 
+  async getFilteredPublishedEvents(filters: {
+    category?: string;
+    date?: string;
+  }): Promise<Result<IEvent[], EventError>> {
+    try {
+      const events = await this.repo.getAll();
+
+      let filtered = events.filter((event) => event.status === "published");
+
+      if (filters.category && filters.category.trim() !== "") {
+        const category = filters.category.trim().toLowerCase();
+        filtered = filtered.filter(
+          (event) => event.category.toLowerCase() === category
+        );
+      }
+
+      if (filters.date && filters.date.trim() !== "") {
+        const targetDate = filters.date.trim();
+
+        filtered = filtered.filter((event) => {
+          const eventDate = new Date(event.startDatetime)
+            .toISOString()
+            .slice(0, 10);
+          return eventDate === targetDate;
+        });
+      }
+
+      return Ok(filtered);
+    } catch {
+      return Err(EventDependencyError("Failed to filter events."));
+    }
+  }
+
   async getEventByID(id: string): Promise<Result<IEvent | null, EventError>> {
     return await this.repo.findById(id);
   }

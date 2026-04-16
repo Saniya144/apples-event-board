@@ -322,8 +322,13 @@ class ExpressApp implements IApp {
         }
 
         const session = recordPageView(sessionStore(req));
-
-        await this.eventController.getAllEvents(res, session);
+        
+        const { category, date } = req.query;
+        
+        await this.eventController.getAllEvents(res, session, {
+          category: typeof category === "string" ? category : undefined,
+          date: typeof date === "string" ? date : undefined,
+        });
       })
     );
 

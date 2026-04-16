@@ -14,7 +14,6 @@ export interface IEvent {
   createdAt: string;
   updatedAt: string;
 }
-
 export interface IEventDetailView {
   id: string;
   title: string;

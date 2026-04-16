@@ -21,7 +21,8 @@ export interface IEventController {
 
   getAllEvents(
     res: Response,
-    session: IAppBrowserSession
+    session: IAppBrowserSession,
+    filters: { category?: string; date?: string }
   ): Promise<void>;
 
   getEventByID(
@@ -77,9 +78,10 @@ class EventController implements IEventController {
 
   async getAllEvents(
     res: Response,
-    session: IAppBrowserSession
+    session: IAppBrowserSession,
+    filters: { category?: string; date?: string }
   ): Promise<void> {
-    const result = await this.service.getAllEvents();
+    const result = await this.service.getFilteredPublishedEvents(filters);
 
     if (!result.ok) {
       res.status(500).render("partials/error", {
@@ -93,6 +95,7 @@ class EventController implements IEventController {
       session,
       pageError: null,
       events: result.value,
+      filters,
     });
   }
 

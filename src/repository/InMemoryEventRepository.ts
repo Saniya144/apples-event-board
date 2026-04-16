@@ -8,7 +8,22 @@ import {
 } from "../events/errors";
 
 class InMemoryEventRepository implements IEventRepository {
-  private readonly events: IEvent[] = [];
+  private readonly events: IEvent[] = [
+  {
+    id: "event-1",
+    title: "Board Game Night",
+    description: "Games and snacks",
+    location: "Campus Center",
+    category: "Social",
+    status: "published",
+    capacity: 20,
+    startDatetime: "2026-04-16T18:00:00.000Z",
+    endDatetime: "2026-04-16T20:00:00.000Z",
+    organizerId: "user@app.test",
+    createdAt: "2026-04-13T10:00:00.000Z",
+    updatedAt: "2026-04-13T10:00:00.000Z",
+  },
+];
 
   async create(event: IEvent): Promise<Result<IEvent, EventError>> {
     try {

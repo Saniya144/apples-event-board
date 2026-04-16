@@ -1,4 +1,4 @@
-import type { Rsvp, RsvpStatus } from "./Rsvp";
+import type { Rsvp, RsvpStatus } from "../model/Rsvp";
 
 export interface IRsvpRepository {
   findByEventAndUser(eventId: string, userId: string): Promise<Rsvp | null>;

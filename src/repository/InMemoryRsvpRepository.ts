@@ -1,4 +1,4 @@
-import type { Rsvp, RsvpStatus } from "./Rsvp";
+import type { Rsvp, RsvpStatus } from "../model/Rsvp";
 import { IRsvpRepository } from "./RsvpRepository";
 
 class InMemoryRsvpRepository implements IRsvpRepository {

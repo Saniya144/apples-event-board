@@ -1,12 +1,15 @@
-import { error } from "node:console";
-import { UnexpectedDependencyError } from "../event/errors";
-import { EventError } from "../event/errors";
-import { Err, Result, Ok } from "../lib/result";
-import { IEvent } from "../model/Event";
-import { IEventRepository } from "../repository/EventRepository";
-import { EventService } from "../service/EventService";
-import { IAppBrowserSession } from "../session/AppSession";
 import type { Response } from "express";
+import type { UserRole } from "../auth/User";
+import type { IAppBrowserSession } from "../session/AppSession";
+import { type EventError } from "../events/errors";
+import { EventService } from "../service/EventService";
+
+export interface ShowEventDetailInput {
+  eventId: string;
+  actingUserId: string;
+  actingUserRole: UserRole;
+  session: IAppBrowserSession;
+}
 
 export interface IEventController {
   createEventFromForm(
@@ -14,28 +17,40 @@ export interface IEventController {
     input: any,
     session: IAppBrowserSession
   ): Promise<void>;
-  getAllEvents(res: Response, session: IAppBrowserSession): Promise<void>;
+
+  getAllEvents(
+    res: Response,
+    session: IAppBrowserSession
+  ): Promise<void>;
+
   getEventByID(
     res: Response,
     id: string,
     session: IAppBrowserSession
   ): Promise<void>;
+
+  showEventDetail(
+    res: Response,
+    input: ShowEventDetailInput
+  ): Promise<void>;
+
   updateEventFromForm(
     res: Response,
     id: string,
     input: any,
     session: IAppBrowserSession
   ): Promise<void>;
-
 }
 
 class EventController implements IEventController {
   constructor(private readonly service: EventService) {}
+
   private mapErrorStatus(error: EventError): number {
-    if (error.type === "EventNotFound") return 404;
-    if (error.type === "UnexpectedDependencyError") return 400;
+    if (error.name === "EventNotFoundError") return 404;
+    if (error.name === "UnexpectedDependencyError") return 400;
     return 500;
   }
+
   async createEventFromForm(
     res: Response,
     input: any,
@@ -43,66 +58,103 @@ class EventController implements IEventController {
   ): Promise<void> {
     const user = session.authenticatedUser;
     const result = await this.service.createEvent(input, user);
-    if (result.ok === false) {
-      const error = result.value;
+
+    if (!result.ok) {
+      const error = result.value as EventError;
       const status = this.mapErrorStatus(error);
       res.status(status).render("partials/error", {
-        error: error.message,
+        message: error.message,
+        layout: false,
       });
       return;
     }
-    res.redirect(`/home`);
+
+    res.redirect("/home");
   }
 
-  async getAllEvents(res: Response,session:IAppBrowserSession): Promise<void> {
+  async getAllEvents(
+    res: Response,
+    session: IAppBrowserSession
+  ): Promise<void> {
     const result = await this.service.getAllEvents();
+
     if (!result.ok) {
       res.status(500).render("partials/error", {
-        message: "Failed to load",
+        message: "Failed to load events.",
+        layout: false,
       });
       return;
     }
+
     res.render("home", {
       session,
-      pageError:null,
+      pageError: null,
       events: result.value,
-      
     });
-
-  
   }
 
-  async getEventByID(res: Response,id:string,session:IAppBrowserSession): Promise<void> {
+  async getEventByID(
+    res: Response,
+    id: string,
+    session: IAppBrowserSession
+  ): Promise<void> {
     const result = await this.service.getEventByID(id);
-    if (!result.ok||!result.value) {
+
+    if (!result.ok || !result.value) {
       res.status(404).render("partials/error", {
-        message: "Event not found",
+        message: "Event not found.",
+        layout: false,
       });
       return;
     }
+
     res.render("events/edit", {
       session,
       event: result.value,
+      pageError: null,
+    });
+  }
+
+  async showEventDetail(
+    res: Response,
+    input: ShowEventDetailInput
+  ): Promise<void> {
+    const result = await this.service.getEventByID(input.eventId);
+
+    if (!result.ok || !result.value) {
+      res.status(404).render("partials/error", {
+        message: "Event not found.",
+        layout: false,
+      });
+      return;
+    }
+
+    res.status(200).render("events/detail", {
+      event: result.value,
+      session: input.session,
+      pageError: null,
     });
   }
 
   async updateEventFromForm(
     res: Response,
-    id:string,
+    id: string,
     input: any,
     session: IAppBrowserSession
   ): Promise<void> {
-    const user= session.authenticatedUser;
-    const result = await this.service.updateEvent(id,input,user);
-    if (result.ok===false) {
-      const error=result.value;
+    const user = session.authenticatedUser;
+    const result = await this.service.updateEvent(id, input, user);
+
+    if (!result.ok) {
+      const error = result.value as EventError;
       res.status(400).render("partials/error", {
         message: error.message,
+        layout: false,
       });
       return;
     }
-   
-    res.redirect(`/home`);
+
+    res.redirect("/home");
   }
 }
 

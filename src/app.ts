@@ -16,6 +16,7 @@ import {
 import { ILoggingService } from "./service/LoggingService";
 import { IEvent } from "./model/Event";
 import { IEventController } from "./controller/EventController";
+import { IRsvpController } from "./controller/RsvpController";
 
 type AsyncRequestHandler = RequestHandler;
 
@@ -39,7 +40,8 @@ class ExpressApp implements IApp {
   constructor(
     private readonly authController: IAuthController,
     private readonly eventController: IEventController,
-    private readonly logger: ILoggingService
+    private readonly rsvpController: IRsvpController,
+    private readonly logger: ILoggingService,
   ) {
     this.app = express();
     this.registerMiddleware();
@@ -178,6 +180,32 @@ class ExpressApp implements IApp {
       asyncHandler(async (req, res) => {
         await this.authController.logoutFromForm(res, sessionStore(req));
       })
+    );
+
+    this.app.post(
+      "/events/:eventId/rsvp",
+      asyncHandler(async (req, res) => {
+        if (!this.requireAuthenticated(req, res)) {
+          return;
+        }
+
+        const currentUser = getAuthenticatedUser(sessionStore(req));
+        if (!currentUser) {
+          res.status(401).render("partials/error", {
+            message: AuthenticationRequired("Please log in to continue.").message,
+            layout: false,
+          });
+          return;
+        }
+
+        const eventId = typeof req.params.eventId === "string" ? req.params.eventId : "";
+
+        await this.rsvpController.toggleRsvpFromForm(
+          res,
+          eventId,
+          currentUser.userId
+        );
+      }),
     );
 
     // ── Admin routes ─────────────────────────────────────────────────
@@ -387,7 +415,8 @@ class ExpressApp implements IApp {
 export function CreateApp(
   authController: IAuthController,
   eventController: IEventController,
-  logger: ILoggingService
+  rsvpController: IRsvpController,
+  logger: ILoggingService,
 ): IApp {
-  return new ExpressApp(authController, eventController, logger);
+  return new ExpressApp(authController, eventController, rsvpController, logger);
 }

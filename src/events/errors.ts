@@ -19,3 +19,11 @@ export function EventNotFoundError(message: string): EventError {
 export function EventDependencyError(message: string): EventError {
   return makeEventError("EventDependencyError", message);
 }
+
+export function EventAuthorizationError(message: string): EventError {
+  return makeEventError("EventAuthorizationError", message);
+}
+
+export function EventStateError(message: string): EventError {
+  return makeEventError("EventStateError", message);
+}

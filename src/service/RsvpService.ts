@@ -1,9 +1,9 @@
 import { Result, Ok, Err } from "../lib/result";
 import type { IEventRepository } from "../repository/EventRepository";
 import type { IEvent } from "../model/Event";
-import type { IRsvpRepository } from "./RsvpRepository";
-import type { RsvpStatus } from "./Rsvp";
-import { EventNotFoundError, RsvpNotAllowedError } from "./errors";
+import type { IRsvpRepository } from "../repository/RsvpRepository";
+import type { RsvpStatus } from "../model/Rsvp";
+import { EventNotFoundError, RsvpNotAllowedError } from "../rsvp/errors";
 
 export type RsvpServiceError = EventNotFoundError | RsvpNotAllowedError;
 
@@ -43,9 +43,9 @@ class RsvpService implements IRsvpService {
       return Err(new EventNotFoundError());
     }
 
-    const allowedResult = this.ensureRsvpAllowed(event);
-    if (!allowedResult.ok) {
-      return allowedResult;
+    const allowedError = this.ensureRsvpAllowed(event);
+    if (allowedError) {
+      return Err(allowedError);
     }
 
     const existingRsvp = await this.rsvpRepository.findByEventAndUser(eventId, userId);
@@ -106,24 +106,22 @@ class RsvpService implements IRsvpService {
     });
   }
 
-  private ensureRsvpAllowed(
-    event: IEvent
-  ): Result<true, RsvpNotAllowedError> {
+  private ensureRsvpAllowed(event: IEvent): RsvpNotAllowedError | null {
     if (event.status === "draft") {
-      return Err(new RsvpNotAllowedError("Cannot RSVP to a draft event."));
+        return new RsvpNotAllowedError("Cannot RSVP to a draft event.");
     }
 
     if (event.status === "cancelled") {
-      return Err(new RsvpNotAllowedError("Cannot RSVP to a cancelled event."));
+        return new RsvpNotAllowedError("Cannot RSVP to a cancelled event.");
     }
 
     const now = new Date();
-    if (event.endTime < now) {
-      return Err(new RsvpNotAllowedError("Cannot RSVP to a past event."));
+    if (new Date(event.endDatetime) < now) {
+        return new RsvpNotAllowedError("Cannot RSVP to a past event.");
     }
 
-    return Ok(true);
-  }
+    return null;
+}
 
   private async getNextActiveStatus(event: IEvent): Promise<RsvpStatus> {
     const currentGoingCount = await this.rsvpRepository.countGoingByEvent(event.id);

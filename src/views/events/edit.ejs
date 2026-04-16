@@ -1,0 +1,16 @@
+<h1>  Edit </h1>
+<form action="/events/<%=event.id%>/edit" method = "POST">
+    <input name="title" value="<%= event.title %>" required />
+    <br /><br />
+    <input name = "location" value="<%=event.location%>" required/>
+    <br /><br />
+    <input type = "datetime-local" name="startTime" required/>
+    <br /><br />
+    <input type = "datetime-local" name="endTime" required/>
+    <br /><br />
+    <input name = "description" value="<%=event.description%>"/>
+    <br /><br />
+    <button type ="submit">Save  Changes</button>
+  
+  </form>
+  <a href="/home"> Back</a>

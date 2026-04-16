@@ -288,6 +288,7 @@ class ExpressApp implements IApp {
 
     // ── Authenticated home page ──────────────────────────────────────
     // TODO: Replace this placeholder with your project's main page.
+
     this.app.get(
       "/home",
       asyncHandler(async (req, res) => {

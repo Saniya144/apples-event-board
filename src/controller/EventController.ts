@@ -122,14 +122,33 @@ class EventController implements IEventController {
     res: Response,
     input: ShowEventDetailInput
   ): Promise<void> {
-    const result = await this.service.getEventByID(input.eventId);
+    const result = await this.service.getEventDetail({
+      eventId: input.eventId,
+      actingUserId: input.actingUserId,
+      actingUserRole: input.actingUserRole,
+    });
 
-    if (!result.ok || !result.value) {
-      res.status(404).render("partials/error", {
-        message: "Event not found.",
-        layout: false,
-      });
-      return;
+    if (result.ok == false) {
+      switch (result.value.name) {
+        case "EventValidationError":
+          res.status(400).render("partials/error", {
+            message: result.value.message,
+            layout: false,
+          });
+          return;
+        case "EventNotFoundError":
+          res.status(404).render("partials/error", {
+            message: result.value.message,
+            layout: false,
+          });
+          return;
+        default:
+          res.status(500).render("partials/error", {
+            message: "Unexpected server error.",
+            layout: false,
+          });
+          return;
+      }
     }
 
     res.status(200).render("events/detail", {
@@ -138,7 +157,6 @@ class EventController implements IEventController {
       pageError: null,
     });
   }
-
   async updateEventFromForm(
     res: Response,
     id: string,

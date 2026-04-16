@@ -20,6 +20,15 @@ interface IAttendanceLookup {
   countGoingByEventId(eventId: string): Promise<Result<number, Error>>;
 }
 
+
+export interface GetEventDetailInput {
+  eventId: string;
+  actingUserId: string;
+  actingUserRole: UserRole;
+}
+
+
+
 export interface TransitionEventInput {
   eventId: string;
   actingUserId: string;

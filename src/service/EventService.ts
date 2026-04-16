@@ -97,6 +97,74 @@ export class EventService {
     }
   }
 
+  async getFilteredPublishedEvents(filters: {
+    category?: string;
+    date?: string;
+  }): Promise<Result<IEvent[], EventError>> {
+    try {
+      const events = await this.repo.getAll();
+
+      let filtered = events.filter((event) => event.status === "published");
+
+      if (filters.category && filters.category.trim() !== "") {
+        const category = filters.category.trim().toLowerCase();
+        filtered = filtered.filter(
+          (event) => event.category.toLowerCase() === category
+        );
+      }
+
+      if (filters.date && filters.date.trim() !== "") {
+        const targetDate = filters.date.trim();
+
+        filtered = filtered.filter((event) => {
+          const eventDate = new Date(event.startDatetime)
+            .toISOString()
+            .slice(0, 10);
+          return eventDate === targetDate;
+        });
+      }
+
+      return Ok(filtered);
+    } catch {
+      return Err(EventDependencyError("Failed to filter events."));
+    }
+  }
+
+  async searchPublishedUpcomingEvents(
+    query?: string
+  ): Promise<Result<IEvent[], EventError>> {
+    try {
+      const events = await this.repo.getAll();
+      const now = new Date();
+
+      let filtered = events.filter((event) => {
+        return (
+          event.status === "published" &&
+          new Date(event.startDatetime) >= now
+        );
+      });
+
+      if (!query || query.trim() === "") {
+        return Ok(filtered);
+      }
+
+      const q = query.trim().toLowerCase();
+
+      filtered = filtered.filter((event) => {
+        return (
+          event.title.toLowerCase().includes(q) ||
+          event.description.toLowerCase().includes(q) ||
+          event.location.toLowerCase().includes(q) ||
+          event.category.toLowerCase().includes(q)
+        );
+      });
+
+      return Ok(filtered);
+    } catch {
+      return Err(EventDependencyError("Failed to search events."));
+    }
+  }
+
   async getEventByID(id: string): Promise<Result<IEvent | null, EventError>> {
     return await this.repo.findById(id);
   }
@@ -170,7 +238,7 @@ export class EventService {
 
     return await this.repo.update(updatedEvent);
   }
-    async getEventDetail(
+  async getEventDetail(
     input: GetEventDetailInput
   ): Promise<Result<IEventDetailView, EventError>> {
     const eventId = input.eventId.trim();
@@ -232,7 +300,7 @@ export class EventService {
       canRsvp: event.status === "published",
     });
   }
-    async publishEvent(
+  async publishEvent(
     input: TransitionEventInput
   ): Promise<Result<IEventDetailView, EventError>> {
     const eventResult = await this.repo.findById(input.eventId);
@@ -273,7 +341,7 @@ export class EventService {
       actingUserRole: input.actingUserRole,
     });
   }
-    async cancelEvent(
+  async cancelEvent(
     input: TransitionEventInput
   ): Promise<Result<IEventDetailView, EventError>> {
     const eventResult = await this.repo.findById(input.eventId);

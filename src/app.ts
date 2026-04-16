@@ -288,7 +288,7 @@ class ExpressApp implements IApp {
 
     // ── Authenticated home page ──────────────────────────────────────
     // TODO: Replace this placeholder with your project's main page.
-    
+
     this.app.get(
       "/home",
       asyncHandler(async (req, res) => {
@@ -297,8 +297,27 @@ class ExpressApp implements IApp {
         }
 
         const session = recordPageView(sessionStore(req));
+        
+        const { category, date } = req.query;
 
-        await this.eventController.getAllEvents(res, session);
+        await this.eventController.getAllEvents(res, session, {
+          category: typeof category === "string" ? category : undefined,
+          date: typeof date === "string" ? date : undefined,
+        });
+      })
+    );
+
+    this.app.get(
+      "/events/search",
+      asyncHandler(async (req, res) => {
+        if (!this.requireAuthenticated(req, res)) {
+          return;
+        }
+
+        const session = recordPageView(sessionStore(req));
+        const q = typeof req.query.q === "string" ? req.query.q : "";
+
+        await this.eventController.searchEvents(res, session, q);
       })
     );
 
@@ -361,7 +380,6 @@ class ExpressApp implements IApp {
         );
       })
     );
-
     this.app.get(
       "/events/:id",
       asyncHandler(async (req, res) => {

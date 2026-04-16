@@ -6,4 +6,5 @@ export interface IRsvpRepository {
   updateStatus(id: string, status: RsvpStatus): Promise<Rsvp | null>;
   listByEvent(eventId: string): Promise<Rsvp[]>;
   countGoingByEvent(eventId: string): Promise<number>;
+  findEarliestWaitlisted(eventId: string): Promise<Rsvp | null>;
 }

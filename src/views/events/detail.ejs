@@ -71,14 +71,19 @@
       <% } %>
 
       <% if (event.canRsvp) { %>
-        <button class="rounded-lg bg-blue-600 text-white px-4 py-2 opacity-60 cursor-not-allowed" disabled>
-          RSVP
-        </button>
+        <form method="POST" action="/events/<%= event.id %>/rsvp">
+          <button
+            type="submit"
+            class="rounded-lg bg-blue-600 text-white px-4 py-2 hover:bg-blue-700 transition"
+          >
+            RSVP
+          </button>
+        </form>
       <% } %>
     </div>
 
     <p class="text-sm text-slate-500 mt-4">
-      Sprint 1 placeholder controls. Buttons become active when Feature 5 and RSVP are wired.
+      RSVP is active for published events. Other controls are still placeholders for later features.
     </p>
   </div> -->
 

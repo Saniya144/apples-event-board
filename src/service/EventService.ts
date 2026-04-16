@@ -12,12 +12,6 @@ import {
 } from "../events/errors";
 
 
-export interface GetEventDetailInput {
-  eventId: string;
-  actingUserId: string;
-  actingUserRole: UserRole;
-}
-
 interface IOrganizerLookup {
   findDisplayNameByUserId(userId: string): Promise<Result<string | null, Error>>;
 }
@@ -245,7 +239,7 @@ export class EventService {
 
     const eventResult = await this.repo.findById(eventId);
 
-    if (!eventResult.ok) {
+    if (eventResult.ok === false) {
       const error = eventResult.value as EventError;
       return Err(EventDependencyError(error.message));
     }

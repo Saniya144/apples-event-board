@@ -65,6 +65,21 @@ class InMemoryRsvpRepository implements IRsvpRepository {
 
     return count;
   }
+
+  async findEarliestWaitlisted(eventId: string): Promise<Rsvp | null> {
+  const waitlisted = [...this.rsvps.values()].filter(
+    (r) => r.eventId === eventId && r.status === "waitlisted"
+  );
+
+  if (waitlisted.length === 0) return null;
+
+  // Sort by createdAt ascending — earliest = first in queue
+  waitlisted.sort(
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  );
+
+  return waitlisted[0];
+}
 }
 
 export function CreateInMemoryRsvpRepository(): IRsvpRepository {

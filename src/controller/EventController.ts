@@ -3,6 +3,7 @@ import type { UserRole } from "../auth/User";
 import type { IAppBrowserSession } from "../session/AppSession";
 import { type EventError } from "../events/errors";
 import { EventService } from "../service/EventService";
+import type { IRsvpService } from "../service/RsvpService";
 
 export interface ShowEventDetailInput {
   eventId: string;
@@ -43,7 +44,9 @@ export interface IEventController {
 }
 
 class EventController implements IEventController {
-  constructor(private readonly service: EventService) {}
+  constructor(private readonly service: EventService,
+    private readonly rsvpService: IRsvpService
+  ) {}
 
   private mapErrorStatus(error: EventError): number {
     if (error.name === "EventNotFoundError") return 404;
@@ -148,10 +151,17 @@ class EventController implements IEventController {
       }
     }
 
+    // Feature 9: get the current user's waitlist position (null if not waitlisted)
+    const waitlistPosition = await this.rsvpService.getWaitlistPosition(
+      input.eventId,
+      input.actingUserId
+    );
+
     res.status(200).render("events/detail", {
       event: result.value,
       session: input.session,
       pageError: null,
+      waitlistPosition,
     });
   }
   async updateEventFromForm(
@@ -176,6 +186,6 @@ class EventController implements IEventController {
   }
 }
 
-export function CreateEventController(service: EventService): IEventController {
-  return new EventController(service);
+export function CreateEventController(service: EventService, rsvpService: IRsvpService): IEventController {
+  return new EventController(service, rsvpService);
 }

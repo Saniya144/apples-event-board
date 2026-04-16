@@ -5,6 +5,9 @@ import { IEvent } from "../model/Event";
 import { IEventRepository } from "../repository/EventRepository";
 
 export class EventService {
+  publishEvent(id: any) {
+    throw new Error("Method not implemented.");
+  }
   constructor(private readonly repo: IEventRepository) {}
   async createEvent(
     input: any,
@@ -35,16 +38,44 @@ export class EventService {
     };
     return await this.repo.create(event);
   }
-  async getAllEvents(): Promise<Result<IEvent[], EventError>> {
+  async getAllEvents(user: any): Promise<Result<IEvent[], EventError>> {
     try {
       const events = await this.repo.getAll();
-      return Ok(events);
+  
+      const visibleEvents = events.filter((event) => {
+        if (event.status === "published") return true;
+  
+        if (event.status === "draft") {
+          return user && (user.role === "admin" || event.organizerID === user.email);
+        }
+  
+        return false;
+      });
+  
+      return Ok(visibleEvents);
     } catch {
       return Err(UnexpectedDependencyError("failed to fetch"));
     }
   }
-  async getEventByID(id: string): Promise<Result<IEvent | null, EventError>> {
-    return await this.repo.findById(id);
+  async getEventByID(id: string,user:any): Promise<Result<IEvent | null, EventError>> {
+    const result = await this.repo.findById(id);
+
+    if (!result.ok || !result.value) {
+      return Err(UnexpectedDependencyError("eventNotFound"));
+    }
+
+    const event = result.value;
+
+    if (event.status === "draft") {
+      const canSee =
+        user && (user.role === "admin" || event.organizerID === user.email);
+
+      if (!canSee) {
+        return Err(UnexpectedDependencyError("eventNotFound"));
+      }
+    }
+
+    return Ok(event);
   }
   async updateEvent(
     id: string,

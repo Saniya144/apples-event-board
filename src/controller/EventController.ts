@@ -57,7 +57,8 @@ class EventController implements IEventController {
     res: Response,
     session: IAppBrowserSession
   ): Promise<void> {
-    const result = await this.service.getAllEvents();
+    const user = session.authenticatedUser;
+    const result = await this.service.getAllEvents(user);
     if (!result.ok) {
       res.status(500).render("partials/error", {
         message: "Failed to load",
@@ -76,7 +77,8 @@ class EventController implements IEventController {
     id: string,
     session: IAppBrowserSession
   ): Promise<void> {
-    const result = await this.service.getEventByID(id);
+    const user = session.authenticatedUser;
+    const result = await this.service.getEventByID(id, user);
     if (!result.ok || !result.value) {
       res.status(404).render("partials/error", {
         message: "Event not found",
@@ -84,7 +86,6 @@ class EventController implements IEventController {
       return;
     }
 
-    const user = session.authenticatedUser;
     const event = result.value;
     if (!user) {
       return res.status(401).render("partials/error", {
@@ -93,10 +94,9 @@ class EventController implements IEventController {
     }
 
     if (
-      user.role !== "admin" && 
-      (user.role !== "staff" || event.organizerID !== user.email) 
-    ) 
-    {
+      user.role !== "admin" &&
+      (user.role !== "staff" || event.organizerID !== user.email)
+    ) {
       return res.status(403).render("partials/error", {
         message: "Not authorized to edit this event",
       });

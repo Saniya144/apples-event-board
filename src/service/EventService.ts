@@ -27,6 +27,8 @@ export interface GetEventDetailInput {
   actingUserRole: UserRole;
 }
 
+
+
 export interface TransitionEventInput {
   eventId: string;
   actingUserId: string;

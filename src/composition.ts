@@ -30,14 +30,15 @@ export function createComposedApp(logger?: ILoggingService): IApp {
   // Event wiring (created but not passed to CreateApp)
   const eventRepository = CreateInMemoryEventRepository();
   const eventService = new EventService(eventRepository);
-  const eventController = CreateEventController(eventService);
+  
 
   // RSVP wiring (created but not passed to CreateApp)
   const rsvpRepository = CreateInMemoryRsvpRepository();
   const rsvpService = CreateRsvpService(rsvpRepository, eventRepository);
   const rsvpController = CreateRsvpController(rsvpService, resolvedLogger);
+  const eventController = CreateEventController(eventService,rsvpService);
 
   // CreateApp only expects authController and logger
   // The other controllers need to be registered another way (likely in app.ts routes)
-  return CreateApp(authController, resolvedLogger);
+  return CreateApp(authController, eventController, rsvpController,resolvedLogger);
 }

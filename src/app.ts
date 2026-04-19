@@ -17,6 +17,7 @@ import { ILoggingService } from "./service/LoggingService";
 import { IEvent } from "./model/Event";
 import { IEventController } from "./controller/EventController";
 import { IRsvpController } from "./controller/RsvpController";
+import { organizerRouter } from "./organizer/organizer.routes";
 
 type AsyncRequestHandler = RequestHandler;
 
@@ -459,6 +460,19 @@ class ExpressApp implements IApp {
         });
       })
     );
+
+
+    // ── Organizer routes ─────────────────────────────────────────────
+    this.app.use(
+      "/organizer",
+      asyncHandler(async (req, res, next) => {
+        if (!this.requireAuthenticated(req, res)) return;
+        next();
+      }),
+    );
+    this.app.use("/organizer", organizerRouter);
+
+
 
     // ── Error handler ────────────────────────────────────────────────
 

@@ -24,4 +24,5 @@ export interface RSVPRepository {
   findByUserId(userId: string): Promise<RSVPWithEvent[]>;
   findByEventAndUser(eventId: string, userId: string): Promise<RSVP | null>;
   save(rsvp: RSVP): Promise<RSVP>;
+  delete(id: string): Promise<void>;
 }

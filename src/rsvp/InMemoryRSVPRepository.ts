@@ -53,4 +53,38 @@ export class InMemoryRSVPRepository implements RSVPRepository {
     rsvps.set(rsvp.id, rsvp);
     return rsvp;
   }
+
+  async delete(id: string): Promise<void> {
+    rsvps.delete(id);
+  }
+
+  // Seed method for testing - add some sample data
+  seedSampleData(userId: string): void {
+    const now = new Date();
+    const futureDate = new Date(now);
+    futureDate.setDate(now.getDate() + 7);
+
+    const pastDate = new Date(now);
+    pastDate.setDate(now.getDate() - 7);
+
+    // Seed an event stub
+    this.upsertEventStub({
+      id: "sample-event-1",
+      title: "Community Meetup",
+      location: "Downtown Library",
+      startDatetime: futureDate,
+      endDatetime: new Date(futureDate.getTime() + 2 * 60 * 60 * 1000),
+      category: "social",
+      status: "published",
+    });
+
+    // Seed an RSVP
+    this.save({
+      id: "sample-rsvp-1",
+      eventId: "sample-event-1",
+      userId: userId,
+      status: "going",
+      createdAt: new Date(),
+    });
+  }
 }

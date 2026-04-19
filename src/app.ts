@@ -1,3 +1,4 @@
+import { rsvpRouter } from "./rsvp/rsvp.routes";
 import path from "node:path";
 import express, { Request, RequestHandler, Response } from "express";
 import session from "express-session";
@@ -473,6 +474,8 @@ class ExpressApp implements IApp {
     this.app.use("/organizer", organizerRouter);
 
 
+
+    this.app.use("/rsvps", rsvpRouter);
 
     // ── Error handler ────────────────────────────────────────────────
 

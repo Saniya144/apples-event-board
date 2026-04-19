@@ -49,6 +49,7 @@ export class EventService {
     if (!input.title || input.title.trim() === "") {
       return Err(EventValidationError("Title is required."));
     }
+    
 
     if (!input.location || input.location.trim() === "") {
       return Err(EventValidationError("Location is required."));
@@ -76,7 +77,7 @@ export class EventService {
       startDatetime: begin.toISOString(),
       endDatetime: end.toISOString(),
       organizerId: user.userId,
-      status: "draft",
+      status: "published",
       capacity:
         input.capacity !== undefined && input.capacity !== ""
           ? Number(input.capacity)

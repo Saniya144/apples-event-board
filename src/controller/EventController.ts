@@ -28,7 +28,7 @@ export interface IEventController {
   getAllEvents(
     res: Response,
     session: IAppBrowserSession,
-    filters: { category?: string; date?: string },
+    filters: { category?: string; date?: string }
   ): Promise<void>;
 
   searchEvents(
@@ -43,10 +43,7 @@ export interface IEventController {
     session: IAppBrowserSession
   ): Promise<void>;
 
-  showEventDetail(
-    res: Response,
-    input: ShowEventDetailInput
-  ): Promise<void>;
+  showEventDetail(res: Response, input: ShowEventDetailInput): Promise<void>;
 
   updateEventFromForm(
     res: Response,
@@ -55,19 +52,14 @@ export interface IEventController {
     session: IAppBrowserSession
   ): Promise<void>;
 
-  publishEvent(
-    res: Response,
-    input: LifecycleEventInput
-  ): Promise<void>;
+  publishEvent(res: Response, input: LifecycleEventInput): Promise<void>;
 
-  cancelEvent(
-    res: Response,
-    input: LifecycleEventInput
-  ): Promise<void>;
+  cancelEvent(res: Response, input: LifecycleEventInput): Promise<void>;
 }
 
 class EventController implements IEventController {
-  constructor(private readonly service: EventService,
+  constructor(
+    private readonly service: EventService,
     private readonly rsvpService: IRsvpService
   ) {}
 
@@ -100,25 +92,38 @@ class EventController implements IEventController {
 
   async getAllEvents(
     res: Response,
-    session: IAppBrowserSession,
-    filters: { category?: string; date?: string },
+    session: IAppBrowserSession
   ): Promise<void> {
-    const result = await this.service.getFilteredPublishedEvents(filters);
-
+    const result = await this.service.getAllEvents();
     if (!result.ok) {
       res.status(500).render("partials/error", {
-        message: "Failed to load events.",
-        layout: false,
+        message: "Failed to load",
       });
       return;
     }
-
+  
+    const user = session.authenticatedUser;
+  
+    if (!user) {
+      return res.status(401).render("partials/error", {
+        message: "Not authenticated",
+      });
+    }
+  
+    const visibleEvents = result.value.filter((event) => {
+      if (event.status === "published") return true;
+  
+      if (event.status === "draft") {
+        return user.role === "admin" || event.organizerId === user.email;
+      }
+  
+      return false;
+    });
+  
     res.render("home", {
       session,
       pageError: null,
-      events: result.value,
-      filters,
-      searchQuery: ""
+      events: visibleEvents,
     });
   }
 
@@ -152,19 +157,45 @@ class EventController implements IEventController {
     session: IAppBrowserSession
   ): Promise<void> {
     const result = await this.service.getEventByID(id);
-
     if (!result.ok || !result.value) {
       res.status(404).render("partials/error", {
-        message: "Event not found.",
-        layout: false,
+        message: "Event not found",
       });
       return;
+    }
+
+    const user = session.authenticatedUser;
+    const event = result.value;
+
+    if (!user) {
+      return res.status(401).render("partials/error", {
+        message: "Not authenticated",
+      });
+    }
+
+    if (event.status === "draft") {
+      const canSeeDraft =
+        user.role === "admin" || event.organizerId === user.email;
+
+      if (!canSeeDraft) {
+        return res.status(404).render("partials/error", {
+          message: "Event not found",
+        });
+      }
+    }
+
+    if (
+      user.role !== "admin" &&
+      (user.role !== "staff" || event.organizerId !== user.email)
+    ) {
+      return res.status(403).render("partials/error", {
+        message: "Not authorized to edit this event",
+      });
     }
 
     res.render("events/edit", {
       session,
       event: result.value,
-      pageError: null,
     });
   }
 
@@ -234,10 +265,7 @@ class EventController implements IEventController {
 
     res.redirect("/home");
   }
-  async publishEvent(
-    res: Response,
-    input: LifecycleEventInput
-  ): Promise<void> {
+  async publishEvent(res: Response, input: LifecycleEventInput): Promise<void> {
     const result = await this.service.publishEvent({
       eventId: input.eventId,
       actingUserId: input.actingUserId,
@@ -268,10 +296,7 @@ class EventController implements IEventController {
     });
   }
 
-  async cancelEvent(
-    res: Response,
-    input: LifecycleEventInput
-  ): Promise<void> {
+  async cancelEvent(res: Response, input: LifecycleEventInput): Promise<void> {
     const result = await this.service.cancelEvent({
       eventId: input.eventId,
       actingUserId: input.actingUserId,
@@ -303,6 +328,9 @@ class EventController implements IEventController {
   }
 }
 
-export function CreateEventController(service: EventService, rsvpService: IRsvpService): IEventController {
+export function CreateEventController(
+  service: EventService,
+  rsvpService: IRsvpService
+): IEventController {
   return new EventController(service, rsvpService);
 }

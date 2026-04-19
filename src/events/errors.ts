@@ -27,3 +27,20 @@ export function EventAuthorizationError(message: string): EventError {
 export function EventStateError(message: string): EventError {
   return makeEventError("EventStateError", message);
 }
+
+export function EventEditNotFoundError(): EventError {
+  return EventNotFoundError("Event not found.");
+}
+
+export function EventEditUnauthorizedError(): EventError {
+  return EventAuthorizationError("Not authorized to edit this event.");
+}
+
+
+export function EventPastEditError(): EventError {
+  return EventStateError("Cannot edit a past event.");
+}
+
+export function EventUpdateFailedError(): EventError {
+  return EventDependencyError("Failed to update event.");
+}

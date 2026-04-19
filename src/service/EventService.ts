@@ -5,6 +5,7 @@ import type { UserRole } from "../auth/User";
 import {
   EventAuthorizationError,
   EventDependencyError,
+  EventEditUnauthorizedError,
   EventNotFoundError,
   EventStateError,
   EventValidationError,
@@ -189,8 +190,7 @@ export class EventService {
     const event = existingResult.value;
 
     if (event.organizerId !== user.userId && user.role !== "admin") {
-      return Err(EventAuthorizationError("Not authorized to edit this event."));
-    }
+      return Err(EventEditUnauthorizedError());}
 
     if (event.status === "cancelled") {
       return Err(EventStateError("Cannot edit a cancelled event."));
@@ -201,11 +201,11 @@ export class EventService {
     }
 
     if (!input.title || input.title.trim() === "") {
-      return Err(EventValidationError("Title is required."));
+      return Err(EventTitleRequiredError());
     }
 
     if (!input.location || input.location.trim() === "") {
-      return Err(EventValidationError("Location is required."));
+      return Err(EventLocationRequiredError());
     }
 
     const begin = new Date(input.startTime);

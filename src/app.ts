@@ -1,6 +1,6 @@
 import { rsvpRouter } from "./rsvp/rsvp.routes";
 import path from "node:path";
-import express, { Request, RequestHandler, Response } from "express";
+import express, { Request, RequestHandler, Response, Router } from "express";
 import session from "express-session";
 import Layouts from "express-ejs-layouts";
 import { IAuthController } from "./auth/AuthController";
@@ -18,7 +18,6 @@ import { ILoggingService } from "./service/LoggingService";
 import { IEvent } from "./model/Event";
 import { IEventController } from "./controller/EventController";
 import { IRsvpController } from "./controller/RsvpController";
-import { organizerRouter } from "./organizer/organizer.routes";
 
 type AsyncRequestHandler = RequestHandler;
 
@@ -43,6 +42,7 @@ class ExpressApp implements IApp {
     private readonly authController: IAuthController,
     private readonly eventController: IEventController,
     private readonly rsvpController: IRsvpController,
+    private readonly organizerRouter: Router,
     private readonly logger: ILoggingService,
   ) {
     this.app = express();
@@ -471,7 +471,7 @@ class ExpressApp implements IApp {
         next();
       }),
     );
-    this.app.use("/organizer", organizerRouter);
+    this.app.use("/organizer", this.organizerRouter);
 
 
 
@@ -506,7 +506,8 @@ export function CreateApp(
   authController: IAuthController,
   eventController: IEventController,
   rsvpController: IRsvpController,
+  organizerRouter: Router,
   logger: ILoggingService,
 ): IApp {
-  return new ExpressApp(authController, eventController, rsvpController, logger);
+  return new ExpressApp(authController, eventController, rsvpController, organizerRouter, logger);
 }

@@ -141,6 +141,7 @@ import { EventService } from "../../src/service/EventService";
 import type { IEvent } from "../../src/model/Event";
 import type { IEventRepository } from "../../src/repository/EventRepository";
 import { EventDependencyError } from "../../src/events/errors";
+import { InMemoryEventRepository } from "../../src/event/InMemoryEventRepository";
 
 function makeEvent(overrides: Partial<IEvent> = {}): IEvent {
   return {
@@ -364,4 +365,112 @@ describe("EventService.getEventDetail", () => {
       expect(result.value.message).toBe("Organizer lookup failed.");
     }
   });
+});
+
+
+describe("EventService.createEvent", () => {
+  let repo: IEventRepository;
+  let service: EventService;
+
+  const user = {
+    userId: "user-123",
+    role: "member",
+  };
+
+  beforeEach(() => {
+    repo = new InMemoryEventRepository();
+    service = new EventService(repo);
+  });
+
+  it("returns title required error when title is empty", async () => {
+    const result = await service.createEvent(
+      {
+        title: "",
+        location: "Campus Center",
+        startTime: "2099-04-25T10:00",
+        endTime: "2099-04-25T11:00",
+      },
+      user
+    );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.value.name).toBe("EventValidationError");
+      expect(result.value.message).toBe("Title is required.");
+    }
+  });
+
+  it("returns location required error when location is empty", async () => {
+    const result = await service.createEvent(
+      {
+        title: "Study Night",
+        location: "",
+        startTime: "2099-04-25T10:00",
+        endTime: "2099-04-25T11:00",
+      },
+      user
+    );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.value.name).toBe("EventValidationError");
+      expect(result.value.message).toBe("Location is required.");
+    }
+  });
+
+  it("returns time required error when start and end times are invalid", async () => {
+    const result = await service.createEvent(
+      {
+        title: "Study Night",
+        location: "Campus Center",
+        startTime: "bad-date",
+        endTime: "bad-date",
+      },
+      user
+    );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.value.name).toBe("EventValidationError");
+      expect(result.value.message).toBe("Valid start and end times are required.");
+    }
+  });
+
+  it("returns start time in past error when start time is before now", async () => {
+    const result = await service.createEvent(
+      {
+        title: "Study Night",
+        location: "Campus Center",
+        startTime: "2020-01-01T10:00",
+        endTime: "2099-04-25T11:00",
+      },
+      user
+    );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.value.name).toBe("EventValidationError");
+      expect(result.value.message).toBe("Start time cannot be in the past.");
+    }
+  });
+
+  it("returns end before start error when end time is before start time", async () => {
+    const result = await service.createEvent(
+      {
+        title: "Study Night",
+        location: "Campus Center",
+        startTime: "2099-04-25T11:00",
+        endTime: "2099-04-25T10:00",
+      },
+      user
+    );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.value.name).toBe("EventValidationError");
+      expect(result.value.message).toBe("End time must be after start time.");
+    }
+  });
+
+
 });

@@ -8,6 +8,12 @@ function makeEventError(name: string, message: string): EventError {
   return error;
 }
 
+function makeEvent(name: string, message: string): EventError {
+  const error = new Error(message) as EventError;
+  error.name = name;
+  return error;
+}
+
 export function EventValidationError(message: string): EventError {
   return makeEventError("EventValidationError", message);
 }
@@ -29,25 +35,35 @@ export function EventStateError(message: string): EventError {
 }
 
 export function EventTitleRequiredError(): EventError {
-  return EventValidationError("Title is required.");
+  return makeEvent("EventTitleRequiredError", "Title is required.");
 }
 
 export function EventLocationRequiredError(): EventError {
-  return EventValidationError("Location is required.");
+  return makeEvent("EventLocationRequiredError", "Location is required.");
 }
 
 export function EventTimeRequiredError(): EventError {
-  return EventValidationError("Valid start and end times are required.");
+  return makeEvent(
+    "EventTimeRequiredError",
+    "Valid start and end times are required."
+  );
 }
 
 export function EventStartTimeInPastError(): EventError {
-  return EventValidationError("Start time cannot be in the past.");
+  return makeEvent(
+    "EventStartTimeInPastError",
+    "Start time cannot be in the past."
+  );
 }
 
 export function EventEndBeforeStartError(): EventError {
-  return EventValidationError("End time must be after start time.");
+  return makeEvent(
+    "EventEndBeforeStartError",
+    "End time must be after start time."
+  );
 }
 
 export function EventCreateFailedError(): EventError {
-  return EventDependencyError("Failed to create event.");
+  return makeEvent("EventCreateFailedError", "Failed to create event.");
 }
+

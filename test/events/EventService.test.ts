@@ -1,141 +1,3 @@
-// import { Ok, Err } from "../../src/lib/result";
-// import { CreateEventService } from "../../src/events/EventService";
-// import type { IEvent } from "../../src/events/Event";
-// import type { IEventRepository } from "../../src/events/EventRepository";
-
-// function makeEvent(overrides: Partial<IEvent> = {}): IEvent {
-//   return {
-//     id: "event-1",
-//     title: "Board Game Night",
-//     description: "Games and snacks",
-//     location: "Campus Center",
-//     category: "Social",
-//     status: "published",
-//     capacity: 20,
-//     startDatetime: "2026-04-16T18:00:00.000Z",
-//     endDatetime: "2026-04-16T20:00:00.000Z",
-//     organizerId: "user-1",
-//     createdAt: "2026-04-13T10:00:00.000Z",
-//     updatedAt: "2026-04-13T10:00:00.000Z",
-//     ...overrides,
-//   };
-// }
-
-// class FakeEventRepository implements IEventRepository {
-//   constructor(private readonly event: IEvent | null) {}
-
-//   async findById() {
-//     return Ok(this.event);
-//   }
-
-//   async create(event: IEvent) {
-//     return Ok(event);
-//   }
-
-//   async update(event: IEvent) {
-//     return Ok(event);
-//   }
-
-//   async list() {
-//     return Ok(this.event ? [this.event] : []);
-//   }
-// }
-
-// describe("EventService.getEventDetail", () => {
-//   it("returns a published event for any authenticated user", async () => {
-//     const repo = new FakeEventRepository(makeEvent());
-//     const service = CreateEventService(
-//       repo,
-//       {
-//         findDisplayNameByUserId: async () => Ok("Una User"),
-//       },
-//       {
-//         countGoingByEventId: async () => Ok(5),
-//       },
-//     );
-
-//     const result = await service.getEventDetail({
-//       eventId: "event-1",
-//       actingUserId: "user-2",
-//       actingUserRole: "user",
-//     });
-
-//     expect(result.ok).toBe(true);
-//     if (result.ok) {
-//       expect(result.value.title).toBe("Board Game Night");
-//       expect(result.value.organizerName).toBe("Una User");
-//       expect(result.value.attendeeCount).toBe(5);
-//       expect(result.value.canRsvp).toBe(true);
-//     }
-//   });
-
-//   it("returns not found for unauthorized draft access", async () => {
-//     const repo = new FakeEventRepository(makeEvent({ status: "draft" }));
-//     const service = CreateEventService(
-//       repo,
-//       {
-//         findDisplayNameByUserId: async () => Ok("Una User"),
-//       },
-//       {
-//         countGoingByEventId: async () => Ok(0),
-//       },
-//     );
-
-//     const result = await service.getEventDetail({
-//       eventId: "event-1",
-//       actingUserId: "user-2",
-//       actingUserRole: "user",
-//     });
-
-//     expect(result.ok).toBe(false);
-//     if (!result.ok) {
-//       expect(result.value.name).toBe("EventNotFoundError");
-//     }
-//   });
-
-//   it("allows organizer to view a draft", async () => {
-//     const repo = new FakeEventRepository(makeEvent({ status: "draft" }));
-//     const service = CreateEventService(
-//       repo,
-//       {
-//         findDisplayNameByUserId: async () => Ok("Una User"),
-//       },
-//       {
-//         countGoingByEventId: async () => Ok(0),
-//       },
-//     );
-
-//     const result = await service.getEventDetail({
-//       eventId: "event-1",
-//       actingUserId: "user-1",
-//       actingUserRole: "user",
-//     });
-
-//     expect(result.ok).toBe(true);
-//   });
-
-//   it("allows admin to view a draft", async () => {
-//     const repo = new FakeEventRepository(makeEvent({ status: "draft" }));
-//     const service = CreateEventService(
-//       repo,
-//       {
-//         findDisplayNameByUserId: async () => Ok("Una User"),
-//       },
-//       {
-//         countGoingByEventId: async () => Ok(0),
-//       },
-//     );
-
-//     const result = await service.getEventDetail({
-//       eventId: "event-1",
-//       actingUserId: "admin-1",
-//       actingUserRole: "admin",
-//     });
-
-//     expect(result.ok).toBe(true);
-//   });
-// });
-
 import { Ok, Err } from "../../src/lib/result";
 import { EventService } from "../../src/service/EventService";
 import type { IEvent } from "../../src/model/Event";
@@ -161,23 +23,41 @@ function makeEvent(overrides: Partial<IEvent> = {}): IEvent {
 }
 
 class FakeEventRepository implements IEventRepository {
-  constructor(private readonly event: IEvent | null) {}
+  public storedEvent: IEvent | null;
+
+  constructor(event: IEvent | null) {
+    this.storedEvent = event;
+  }
 
   async findById(_id: string) {
-    return Ok(this.event);
+    return Ok(this.storedEvent);
   }
 
   async create(event: IEvent) {
+    this.storedEvent = event;
     return Ok(event);
   }
 
   async update(event: IEvent) {
+    this.storedEvent = event;
     return Ok(event);
   }
 
   async getAll() {
-    return this.event ? [this.event] : [];
+    return this.storedEvent ? [this.storedEvent] : [];
   }
+}
+
+function makeService(repo: IEventRepository) {
+  return new EventService(
+    repo,
+    {
+      findDisplayNameByUserId: async () => Ok("Sam Staff"),
+    },
+    {
+      countGoingByEventId: async () => Ok(0),
+    }
+  );
 }
 
 describe("EventService.getEventDetail", () => {
@@ -185,12 +65,8 @@ describe("EventService.getEventDetail", () => {
     const repo = new FakeEventRepository(makeEvent());
     const service = new EventService(
       repo,
-      {
-        findDisplayNameByUserId: async () => Ok("Sam Staff"),
-      },
-      {
-        countGoingByEventId: async () => Ok(5),
-      }
+      { findDisplayNameByUserId: async () => Ok("Sam Staff") },
+      { countGoingByEventId: async () => Ok(5) }
     );
 
     const result = await service.getEventDetail({
@@ -212,15 +88,7 @@ describe("EventService.getEventDetail", () => {
 
   it("returns EventNotFoundError when the event does not exist", async () => {
     const repo = new FakeEventRepository(null);
-    const service = new EventService(
-      repo,
-      {
-        findDisplayNameByUserId: async () => Ok("Sam Staff"),
-      },
-      {
-        countGoingByEventId: async () => Ok(0),
-      }
-    );
+    const service = makeService(repo);
 
     const result = await service.getEventDetail({
       eventId: "missing-event",
@@ -237,15 +105,7 @@ describe("EventService.getEventDetail", () => {
 
   it("returns EventNotFoundError for unauthorized draft access", async () => {
     const repo = new FakeEventRepository(makeEvent({ status: "draft" }));
-    const service = new EventService(
-      repo,
-      {
-        findDisplayNameByUserId: async () => Ok("Sam Staff"),
-      },
-      {
-        countGoingByEventId: async () => Ok(0),
-      }
-    );
+    const service = makeService(repo);
 
     const result = await service.getEventDetail({
       eventId: "event-1",
@@ -264,15 +124,7 @@ describe("EventService.getEventDetail", () => {
     const repo = new FakeEventRepository(
       makeEvent({ status: "draft", organizerId: "user-staff" })
     );
-    const service = new EventService(
-      repo,
-      {
-        findDisplayNameByUserId: async () => Ok("Sam Staff"),
-      },
-      {
-        countGoingByEventId: async () => Ok(0),
-      }
-    );
+    const service = makeService(repo);
 
     const result = await service.getEventDetail({
       eventId: "event-1",
@@ -291,15 +143,7 @@ describe("EventService.getEventDetail", () => {
 
   it("allows an admin to view a draft", async () => {
     const repo = new FakeEventRepository(makeEvent({ status: "draft" }));
-    const service = new EventService(
-      repo,
-      {
-        findDisplayNameByUserId: async () => Ok("Sam Staff"),
-      },
-      {
-        countGoingByEventId: async () => Ok(0),
-      }
-    );
+    const service = makeService(repo);
 
     const result = await service.getEventDetail({
       eventId: "event-1",
@@ -316,15 +160,7 @@ describe("EventService.getEventDetail", () => {
 
   it("returns EventValidationError when eventId is blank", async () => {
     const repo = new FakeEventRepository(makeEvent());
-    const service = new EventService(
-      repo,
-      {
-        findDisplayNameByUserId: async () => Ok("Sam Staff"),
-      },
-      {
-        countGoingByEventId: async () => Ok(0),
-      }
-    );
+    const service = makeService(repo);
 
     const result = await service.getEventDetail({
       eventId: "   ",
@@ -362,6 +198,177 @@ describe("EventService.getEventDetail", () => {
     if (!result.ok) {
       expect(result.value.name).toBe("EventDependencyError");
       expect(result.value.message).toBe("Organizer lookup failed.");
+    }
+  });
+});
+
+describe("EventService.publishEvent", () => {
+  it("allows the organizer to publish a draft", async () => {
+    const repo = new FakeEventRepository(
+      makeEvent({ status: "draft", organizerId: "user-staff" })
+    );
+    const service = makeService(repo);
+
+    const result = await service.publishEvent({
+      eventId: "event-1",
+      actingUserId: "user-staff",
+      actingUserRole: "staff",
+    });
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.status).toBe("published");
+      expect(result.value.canPublish).toBe(false);
+      expect(result.value.canRsvp).toBe(true);
+    }
+  });
+
+  it("returns EventAuthorizationError when non-owner tries to publish", async () => {
+    const repo = new FakeEventRepository(
+      makeEvent({ status: "draft", organizerId: "user-staff" })
+    );
+    const service = makeService(repo);
+
+    const result = await service.publishEvent({
+      eventId: "event-1",
+      actingUserId: "user-reader",
+      actingUserRole: "user",
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.value.name).toBe("EventAuthorizationError");
+      expect(result.value.message).toBe("Only the organizer can publish this event.");
+    }
+  });
+
+  it("returns EventStateError when trying to publish a published event", async () => {
+    const repo = new FakeEventRepository(
+      makeEvent({ status: "published", organizerId: "user-staff" })
+    );
+    const service = makeService(repo);
+
+    const result = await service.publishEvent({
+      eventId: "event-1",
+      actingUserId: "user-staff",
+      actingUserRole: "staff",
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.value.name).toBe("EventStateError");
+      expect(result.value.message).toBe("Only draft events can be published.");
+    }
+  });
+
+  it("returns EventNotFoundError when publishing a missing event", async () => {
+    const repo = new FakeEventRepository(null);
+    const service = makeService(repo);
+
+    const result = await service.publishEvent({
+      eventId: "missing-event",
+      actingUserId: "user-staff",
+      actingUserRole: "staff",
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.value.name).toBe("EventNotFoundError");
+    }
+  });
+});
+
+describe("EventService.cancelEvent", () => {
+  it("allows the organizer to cancel a published event", async () => {
+    const repo = new FakeEventRepository(
+      makeEvent({ status: "published", organizerId: "user-staff" })
+    );
+    const service = makeService(repo);
+
+    const result = await service.cancelEvent({
+      eventId: "event-1",
+      actingUserId: "user-staff",
+      actingUserRole: "staff",
+    });
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.status).toBe("cancelled");
+      expect(result.value.canRsvp).toBe(false);
+    }
+  });
+
+  it("allows an admin to cancel any published event", async () => {
+    const repo = new FakeEventRepository(
+      makeEvent({ status: "published", organizerId: "user-staff" })
+    );
+    const service = makeService(repo);
+
+    const result = await service.cancelEvent({
+      eventId: "event-1",
+      actingUserId: "user-admin",
+      actingUserRole: "admin",
+    });
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.status).toBe("cancelled");
+    }
+  });
+
+  it("returns EventAuthorizationError when unauthorized user tries to cancel", async () => {
+    const repo = new FakeEventRepository(
+      makeEvent({ status: "published", organizerId: "user-staff" })
+    );
+    const service = makeService(repo);
+
+    const result = await service.cancelEvent({
+      eventId: "event-1",
+      actingUserId: "user-reader",
+      actingUserRole: "user",
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.value.name).toBe("EventAuthorizationError");
+      expect(result.value.message).toBe(
+        "Only the organizer or an admin can cancel this event."
+      );
+    }
+  });
+
+  it("returns EventStateError when trying to cancel a draft", async () => {
+    const repo = new FakeEventRepository(
+      makeEvent({ status: "draft", organizerId: "user-staff" })
+    );
+    const service = makeService(repo);
+
+    const result = await service.cancelEvent({
+      eventId: "event-1",
+      actingUserId: "user-staff",
+      actingUserRole: "staff",
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.value.name).toBe("EventStateError");
+      expect(result.value.message).toBe("Only published events can be cancelled.");
+    }
+  });
+
+  it("returns EventNotFoundError when cancelling a missing event", async () => {
+    const repo = new FakeEventRepository(null);
+    const service = makeService(repo);
+
+    const result = await service.cancelEvent({
+      eventId: "missing-event",
+      actingUserId: "user-admin",
+      actingUserRole: "admin",
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.value.name).toBe("EventNotFoundError");
     }
   });
 });

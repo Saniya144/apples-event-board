@@ -76,7 +76,7 @@ import {
   type EventError,
 } from "../events/errors";
 
-class InMemoryEventRepository implements IEventRepository {
+export class InMemoryEventRepository implements IEventRepository {
   private readonly events: IEvent[] = [
     {
       id: "event-1",

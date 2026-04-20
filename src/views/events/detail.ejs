@@ -52,6 +52,16 @@
         </p>
       </div>
     </div>
+
+    <!-- ✅ ADD THIS: waitlist position banner, shown only when user is waitlisted -->
+    <% if (waitlistPosition !== null && waitlistPosition !== undefined) { %>
+      <div class="rounded-lg border border-yellow-300 bg-yellow-50 p-4 text-sm text-yellow-800">
+        <p class="font-semibold">You are on the waitlist</p>
+        <p>Your current position: <strong>#<%= waitlistPosition %></strong></p>
+        <p class="text-xs mt-1 text-yellow-600">You will be automatically promoted if a spot opens up.</p>
+      </div>
+    <% } %>
+
   </div>
 
   <!-- <div class="bg-white rounded-xl shadow p-6">
@@ -72,13 +82,16 @@
 
       <% if (event.canRsvp) { %>
         <form method="POST" action="/events/<%= event.id %>/rsvp">
-          <button
-            type="submit"
-            class="rounded-lg bg-blue-600 text-white px-4 py-2 hover:bg-blue-700 transition"
-          >
+          <button class="rounded-lg bg-blue-600 text-white px-4 py-2 hover:bg-blue-700">
             RSVP
           </button>
         </form>
+        <!-- ✅ ADD THIS: shown right under the RSVP button when user is on waitlist -->
+        <% if (waitlistPosition !== null && waitlistPosition !== undefined) { %>
+          <p class="text-xs text-slate-500 mt-1">
+            You are currently <strong>#<%= waitlistPosition %></strong> on the waitlist.
+          </p>
+        <% } %>
       <% } %>
     </div>
 

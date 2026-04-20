@@ -7,11 +7,17 @@ import { EventNotFoundError, RsvpNotAllowedError } from "../rsvp/errors";
 
 export type RsvpServiceError = EventNotFoundError | RsvpNotAllowedError;
 
+export type RsvpEventSummary = Pick<
+  IEvent,
+  "id" | "title" | "location" | "startDatetime" | "endDatetime" | "category" | "status"
+>;
+
 export type RsvpToggleResult = {
   eventId: string;
   userId: string;
   status: RsvpStatus;
   attendeeCount: number;
+  event: RsvpEventSummary;
 };
 
 export interface IRsvpService {
@@ -45,6 +51,20 @@ class RsvpService implements IRsvpService {
       return Err(new EventNotFoundError());
     }
 
+    // Store event stub for dashboard (Feature 7)
+    const rsvpRepoWithStub = this.rsvpRepository as any;
+    if (rsvpRepoWithStub.upsertEventStub) {
+      rsvpRepoWithStub.upsertEventStub({
+        id: event.id,
+        title: event.title,
+        location: event.location,
+        startDatetime: new Date(event.startDatetime),
+        endDatetime: new Date(event.endDatetime),
+        category: event.category,
+        status: event.status,
+      });
+    }
+
     const allowedError = this.ensureRsvpAllowed(event);
     if (allowedError) {
       return Err(allowedError);
@@ -68,6 +88,15 @@ class RsvpService implements IRsvpService {
         userId,
         status: created.status,
         attendeeCount,
+        event: {
+          id: event.id,
+          title: event.title,
+          location: event.location,
+          startDatetime: event.startDatetime,
+          endDatetime: event.endDatetime,
+          category: event.category,
+          status: event.status,
+        },
       });
     }
 
@@ -97,6 +126,15 @@ class RsvpService implements IRsvpService {
         userId,
         status: updated.status,
         attendeeCount,
+        event: {
+          id: event.id,
+          title: event.title,
+          location: event.location,
+          startDatetime: event.startDatetime,
+          endDatetime: event.endDatetime,
+          category: event.category,
+          status: event.status,
+        },
       });
     }
 
@@ -117,6 +155,15 @@ class RsvpService implements IRsvpService {
       userId,
       status: updated.status,
       attendeeCount,
+      event: {
+        id: event.id,
+        title: event.title,
+        location: event.location,
+        startDatetime: event.startDatetime,
+        endDatetime: event.endDatetime,
+        category: event.category,
+        status: event.status,
+      },
     });
   }
 

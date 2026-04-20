@@ -38,8 +38,8 @@
                 class="cancel-rsvp-btn text-sm px-3 py-1 bg-red-50 text-red-600 rounded hover:bg-red-100"
                 hx-post="/rsvps/<%= rsvp.eventId %>/toggle"
                 hx-headers='{"X-CSRF": "TODO"}'
-                hx-swap="outerHTML"
-                hx-target="#rsvp-<%= rsvp.id %>"
+                hx-swap="innerHTML"
+                hx-target="#rsvp-list"
               >
                 Cancel RSVP
               </button>

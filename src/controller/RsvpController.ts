@@ -1,7 +1,8 @@
 import type { Response } from "express";
+import { randomUUID } from "node:crypto";
 import type { IRsvpService } from "../service/RsvpService";
 import type { ILoggingService } from "../service/LoggingService";
-import { Err } from "../lib/result";
+import { rsvpRepository as dashboardRsvpRepository } from "../rsvp/rsvp.routes";
 
 export interface IRsvpController {
   toggleRsvpFromForm(
@@ -37,6 +38,33 @@ class RsvpController implements IRsvpController {
     this.logger.info(
       `RSVP toggled for user ${userId} on event ${eventId} -> ${result.value.status}`
     );
+
+    const legacyRepo = dashboardRsvpRepository as any;
+    if (legacyRepo?.upsertEventStub) {
+      legacyRepo.upsertEventStub({
+        ...result.value.event,
+        startDatetime: new Date(result.value.event.startDatetime),
+        endDatetime: new Date(result.value.event.endDatetime),
+      });
+    }
+
+    if (legacyRepo?.findByEventAndUser && legacyRepo?.save && legacyRepo?.delete) {
+      const existing = await legacyRepo.findByEventAndUser(eventId, userId);
+
+      if (result.value.status === "cancelled") {
+        if (existing) {
+          await legacyRepo.delete(existing.id);
+        }
+      } else {
+        await legacyRepo.save({
+          id: existing?.id ?? randomUUID(),
+          eventId,
+          userId,
+          status: result.value.status,
+          createdAt: existing?.createdAt ?? new Date(),
+        });
+      }
+    }
 
     res.redirect(`/events/${eventId}`);
   }

@@ -5,8 +5,12 @@ import type { UserRole } from "../auth/User";
 import {
   EventAuthorizationError,
   EventDependencyError,
+  EventEndBeforeStartError,
+  EventLocationRequiredError,
   EventNotFoundError,
+  EventStartTimeInPastError,
   EventStateError,
+  EventTitleRequiredError,
   EventValidationError,
   type EventError,
 } from "../events/errors";
@@ -47,23 +51,27 @@ export class EventService {
     user: any
   ): Promise<Result<IEvent, EventError>> {
     if (!input.title || input.title.trim() === "") {
-      return Err(EventValidationError("Title is required."));
+      return Err(EventTitleRequiredError());
     }
     
 
     if (!input.location || input.location.trim() === "") {
-      return Err(EventValidationError("Location is required."));
+      return Err(EventLocationRequiredError());
     }
 
     const begin = new Date(input.startTime);
     const end = new Date(input.endTime);
 
+   
+
     if (Number.isNaN(begin.getTime()) || Number.isNaN(end.getTime())) {
       return Err(EventValidationError("Valid start and end times are required."));
     }
 
+    if((begin< new Date())) return Err(EventStartTimeInPastError());
+
     if (end < begin) {
-      return Err(EventValidationError("End time must be after start time."));
+      return Err(EventEndBeforeStartError());;
     }
 
     const now = new Date().toISOString();

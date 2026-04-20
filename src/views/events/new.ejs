@@ -1,14 +1,20 @@
 <h1>  Create Event</h1>
-<form action="/events/new" method = "POST">
-  <input name = "title" placeholder="Title" required/>
+<div id="form-error"></div>
+
+<form
+  hx-post="/events/new"
+  hx-target="#form-error"
+  hx-swap="innerHTML"
+>
+  <input name = "title" placeholder="Title" />
   <br /><br />
-  <input name = "location" placeholder="Location" required/>
+  <input name = "location" placeholder="Location" />
   <br /><br />
   <input name="category" placeholder="Category" />
   <br /><br />
-  <input type = "datetime-local" name="startTime" required/>
+  <input type = "datetime-local" name="startTime" />
   <br /><br />
-  <input type = "datetime-local" name="endTime" required/>
+  <input type = "datetime-local" name="endTime" />
   <br /><br />
   <input name = "description" placeholder="Description"/>
   <br /><br />

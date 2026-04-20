@@ -91,41 +91,57 @@ class EventController implements IEventController {
   }
 
   async getAllEvents(
-    res: Response,
-    session: IAppBrowserSession
-  ): Promise<void> {
-    const result = await this.service.getAllEvents();
-    if (!result.ok) {
-      res.status(500).render("partials/error", {
-        message: "Failed to load",
-      });
-      return;
-    }
-  
-    const user = session.authenticatedUser;
-  
-    if (!user) {
-      return res.status(401).render("partials/error", {
-        message: "Not authenticated",
-      });
-    }
-  
-    const visibleEvents = result.value.filter((event) => {
-      if (event.status === "published") return true;
-  
-      if (event.status === "draft") {
-        return user.role === "admin" || event.organizerId === user.email;
-      }
-  
-      return false;
+  res: Response,
+  session: IAppBrowserSession,
+  filters: { category?: string; date?: string }
+): Promise<void> {
+  const hasFilters =
+    (filters.category && filters.category.trim() !== "") ||
+    (filters.date && filters.date.trim() !== "");
+
+  const result = hasFilters
+    ? await this.service.getFilteredPublishedEvents(filters)
+    : await this.service.getAllEvents();
+
+  if (!result.ok) {
+    res.status(500).render("partials/error", {
+      message: "Failed to load",
+      layout: false,
     });
-  
-    res.render("home", {
-      session,
-      pageError: null,
-      events: visibleEvents,
-    });
+    return;
   }
+
+  const user = session.authenticatedUser;
+
+  if (!user) {
+    res.status(401).render("partials/error", {
+      message: "Not authenticated",
+      layout: false,
+    });
+    return;
+  }
+
+  const visibleEvents = result.value.filter((event) => {
+    if (event.status === "published") return true;
+
+    if (event.status === "draft") {
+      return user.role === "admin" || event.organizerId === user.userId;
+    }
+
+    return false;
+  });
+
+  res.render("home", {
+    session,
+    pageError: null,
+    events: visibleEvents,
+    filters: {
+      category: filters.category ?? "",
+      date: filters.date ?? "",
+    },
+    searchQuery: "",
+  });
+}
 
   async searchEvents(
     res: Response,

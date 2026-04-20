@@ -65,7 +65,10 @@ class EventController implements IEventController {
 
   private mapErrorStatus(error: EventError): number {
     if (error.name === "EventNotFoundError") return 404;
-    if (error.name === "UnexpectedDependencyError") return 400;
+    if (error.name === "EventValidationError") return 400;
+    if (error.name === "EventAuthorizationError") return 403;
+    if (error.name === "EventStateError") return 400;
+    if (error.name === "EventDependencyError") return 500;
     return 500;
   }
 
@@ -91,57 +94,57 @@ class EventController implements IEventController {
   }
 
   async getAllEvents(
-  res: Response,
-  session: IAppBrowserSession,
-  filters: { category?: string; date?: string }
-): Promise<void> {
-  const hasFilters =
-    (filters.category && filters.category.trim() !== "") ||
-    (filters.date && filters.date.trim() !== "");
+    res: Response,
+    session: IAppBrowserSession,
+    filters: { category?: string; date?: string }
+  ): Promise<void> {
+    const hasFilters =
+      (filters.category && filters.category.trim() !== "") ||
+      (filters.date && filters.date.trim() !== "");
 
-  const result = hasFilters
-    ? await this.service.getFilteredPublishedEvents(filters)
-    : await this.service.getAllEvents();
+    const result = hasFilters
+      ? await this.service.getFilteredPublishedEvents(filters)
+      : await this.service.getAllEvents();
 
-  if (!result.ok) {
-    res.status(500).render("partials/error", {
-      message: "Failed to load",
-      layout: false,
-    });
-    return;
-  }
-
-  const user = session.authenticatedUser;
-
-  if (!user) {
-    res.status(401).render("partials/error", {
-      message: "Not authenticated",
-      layout: false,
-    });
-    return;
-  }
-
-  const visibleEvents = result.value.filter((event) => {
-    if (event.status === "published") return true;
-
-    if (event.status === "draft") {
-      return user.role === "admin" || event.organizerId === user.userId;
+    if (!result.ok) {
+      res.status(500).render("partials/error", {
+        message: "Failed to load",
+        layout: false,
+      });
+      return;
     }
 
-    return false;
-  });
+    const user = session.authenticatedUser;
 
-  res.render("home", {
-    session,
-    pageError: null,
-    events: visibleEvents,
-    filters: {
-      category: filters.category ?? "",
-      date: filters.date ?? "",
-    },
-    searchQuery: "",
-  });
-}
+    if (!user) {
+      res.status(401).render("partials/error", {
+        message: "Not authenticated",
+        layout: false,
+      });
+      return;
+    }
+
+    const visibleEvents = result.value.filter((event) => {
+      if (event.status === "published") return true;
+
+      if (event.status === "draft") {
+        return user.role === "admin" || event.organizerId === user.userId;
+      }
+
+      return false;
+    });
+
+    res.render("home", {
+      session,
+      pageError: null,
+      events: visibleEvents,
+      filters: {
+        category: filters.category ?? "",
+        date: filters.date ?? "",
+      },
+      searchQuery: "",
+    });
+  }
 
   async searchEvents(
     res: Response,
@@ -176,6 +179,7 @@ class EventController implements IEventController {
     if (!result.ok || !result.value) {
       res.status(404).render("partials/error", {
         message: "Event not found",
+        layout: false,
       });
       return;
     }
@@ -184,29 +188,35 @@ class EventController implements IEventController {
     const event = result.value;
 
     if (!user) {
-      return res.status(401).render("partials/error", {
+      res.status(401).render("partials/error", {
         message: "Not authenticated",
+        layout: false,
       });
+      return;
     }
 
     if (event.status === "draft") {
       const canSeeDraft =
-        user.role === "admin" || event.organizerId === user.email;
+        user.role === "admin" || event.organizerId === user.userId;
 
       if (!canSeeDraft) {
-        return res.status(404).render("partials/error", {
+        res.status(404).render("partials/error", {
           message: "Event not found",
+          layout: false,
         });
+        return;
       }
     }
 
     if (
       user.role !== "admin" &&
-      (user.role !== "staff" || event.organizerId !== user.email)
+      (user.role !== "staff" || event.organizerId !== user.userId)
     ) {
-      return res.status(403).render("partials/error", {
+      res.status(403).render("partials/error", {
         message: "Not authorized to edit this event",
+        layout: false,
       });
+      return;
     }
 
     res.render("events/edit", {
@@ -248,7 +258,6 @@ class EventController implements IEventController {
       }
     }
 
-    // Feature 9: get the current user's waitlist position (null if not waitlisted)
     const waitlistPosition = await this.rsvpService.getWaitlistPosition(
       input.eventId,
       input.actingUserId
@@ -261,6 +270,7 @@ class EventController implements IEventController {
       waitlistPosition,
     });
   }
+
   async updateEventFromForm(
     res: Response,
     id: string,
@@ -281,6 +291,7 @@ class EventController implements IEventController {
 
     res.redirect("/home");
   }
+
   async publishEvent(res: Response, input: LifecycleEventInput): Promise<void> {
     const result = await this.service.publishEvent({
       eventId: input.eventId,
@@ -290,14 +301,7 @@ class EventController implements IEventController {
 
     if (result.ok === false) {
       const error = result.value as EventError;
-      const status =
-        error.name === "EventNotFoundError"
-          ? 404
-          : error.name === "EventAuthorizationError" ||
-            error.name === "EventStateError" ||
-            error.name === "EventValidationError"
-          ? 400
-          : 500;
+      const status = this.mapErrorStatus(error);
 
       res.status(status).render("partials/error", {
         message: error.message,
@@ -306,7 +310,7 @@ class EventController implements IEventController {
       return;
     }
 
-    res.status(200).render("../partials/lifecycle-controls", {
+    res.status(200).render("partials/lifecycle-controls", {
       event: result.value,
       layout: false,
     });
@@ -321,14 +325,7 @@ class EventController implements IEventController {
 
     if (result.ok === false) {
       const error = result.value as EventError;
-      const status =
-        error.name === "EventNotFoundError"
-          ? 404
-          : error.name === "EventAuthorizationError" ||
-            error.name === "EventStateError" ||
-            error.name === "EventValidationError"
-          ? 400
-          : 500;
+      const status = this.mapErrorStatus(error);
 
       res.status(status).render("partials/error", {
         message: error.message,
@@ -337,7 +334,7 @@ class EventController implements IEventController {
       return;
     }
 
-    res.status(200).render("../partials/lifecycle-controls", {
+    res.status(200).render("partials/lifecycle-controls", {
       event: result.value,
       layout: false,
     });

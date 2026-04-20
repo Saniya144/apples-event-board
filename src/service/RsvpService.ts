@@ -19,6 +19,8 @@ export interface IRsvpService {
     eventId: string,
     userId: string
   ): Promise<Result<RsvpToggleResult, RsvpServiceError>>;
+
+  getWaitlistPosition(eventId: string, userId: string): Promise<number | null>;
 }
 
 class RsvpService implements IRsvpService {
@@ -74,6 +76,18 @@ class RsvpService implements IRsvpService {
 
       if (!updated) {
         return Err(new RsvpNotAllowedError("Could not cancel RSVP."));
+      }
+
+      // waitlist promotion logic
+      if (existingRsvp.status === "going") {
+        const nextWaitlisted = await this.rsvpRepository.findEarliestWaitlisted(eventId);
+        if (nextWaitlisted) {
+          const promoted = await this.rsvpRepository.updateStatus(nextWaitlisted.id, "going");
+          if (!promoted) {
+            // Promotion failed — this is unexpected, but we still return the cancellation result
+            // In Sprint 3 (Prisma), this whole block becomes a transaction
+          }
+        }
       }
 
       const attendeeCount = await this.rsvpRepository.countGoingByEvent(eventId);
@@ -147,6 +161,21 @@ class RsvpService implements IRsvpService {
     }
 
     return null;
+  }
+
+  // Add to RsvpService class:
+  async getWaitlistPosition(eventId: string, userId: string): Promise<number | null> {
+    const allRsvps = await this.rsvpRepository.listByEvent(eventId);
+
+    // Get only waitlisted RSVPs, sorted by createdAt ascending
+    const waitlist = allRsvps
+      .filter((r) => r.status === "waitlisted")
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+    const position = waitlist.findIndex((r) => r.userId === userId);
+
+    // findIndex returns -1 if not found; otherwise return 1-based position
+    return position === -1 ? null : position + 1;
   }
 }
 

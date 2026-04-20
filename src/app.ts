@@ -1,3 +1,4 @@
+import { rsvpRouter } from "./rsvp/rsvp.routes";
 import path from "node:path";
 import express, { Request, RequestHandler, Response } from "express";
 import session from "express-session";
@@ -17,6 +18,7 @@ import { ILoggingService } from "./service/LoggingService";
 import { IEvent } from "./model/Event";
 import { IEventController } from "./controller/EventController";
 import { IRsvpController } from "./controller/RsvpController";
+import { organizerRouter } from "./organizer/organizer.routes";
 
 type AsyncRequestHandler = RequestHandler;
 
@@ -288,7 +290,7 @@ class ExpressApp implements IApp {
 
     // ── Authenticated home page ──────────────────────────────────────
     // TODO: Replace this placeholder with your project's main page.
-    
+
     this.app.get(
       "/home",
       asyncHandler(async (req, res) => {
@@ -297,8 +299,27 @@ class ExpressApp implements IApp {
         }
 
         const session = recordPageView(sessionStore(req));
+        
+        const { category, date } = req.query;
 
-        await this.eventController.getAllEvents(res, session);
+        await this.eventController.getAllEvents(res, session, {
+          category: typeof category === "string" ? category : undefined,
+          date: typeof date === "string" ? date : undefined,
+        });
+      })
+    );
+
+    this.app.get(
+      "/events/search",
+      asyncHandler(async (req, res) => {
+        if (!this.requireAuthenticated(req, res)) {
+          return;
+        }
+
+        const session = recordPageView(sessionStore(req));
+        const q = typeof req.query.q === "string" ? req.query.q : "";
+
+        await this.eventController.searchEvents(res, session, q);
       })
     );
 
@@ -361,7 +382,6 @@ class ExpressApp implements IApp {
         );
       })
     );
-
     this.app.get(
       "/events/:id",
       asyncHandler(async (req, res) => {
@@ -388,6 +408,74 @@ class ExpressApp implements IApp {
         });
       }),
     );
+    this.app.post(
+      "/events/:id/publish",
+      asyncHandler(async (req, res) => {
+        if (!this.requireAuthenticated(req, res)) {
+          return;
+        }
+
+        const currentUser = getAuthenticatedUser(sessionStore(req));
+        if (!currentUser) {
+          res.status(401).render("partials/error", {
+            message: AuthenticationRequired("Please log in to continue.").message,
+            layout: false,
+          });
+          return;
+        }
+
+        const session = touchAppSession(sessionStore(req));
+
+        await this.eventController.publishEvent(res, {
+          eventId: typeof req.params.id === "string" ? req.params.id : "",
+          actingUserId: currentUser.userId,
+          actingUserRole: currentUser.role,
+          session,
+        });
+      })
+    );
+
+    this.app.post(
+      "/events/:id/cancel",
+      asyncHandler(async (req, res) => {
+        if (!this.requireAuthenticated(req, res)) {
+          return;
+        }
+
+        const currentUser = getAuthenticatedUser(sessionStore(req));
+        if (!currentUser) {
+          res.status(401).render("partials/error", {
+            message: AuthenticationRequired("Please log in to continue.").message,
+            layout: false,
+          });
+          return;
+        }
+
+        const session = touchAppSession(sessionStore(req));
+
+        await this.eventController.cancelEvent(res, {
+          eventId: typeof req.params.id === "string" ? req.params.id : "",
+          actingUserId: currentUser.userId,
+          actingUserRole: currentUser.role,
+          session,
+        });
+      })
+    );
+
+
+    // ── Organizer routes ─────────────────────────────────────────────
+    this.app.use(
+      "/organizer",
+      asyncHandler(async (req, res, next) => {
+        if (!this.requireAuthenticated(req, res)) return;
+        next();
+      }),
+    );
+    this.app.use("/organizer", organizerRouter);
+
+
+
+    this.app.use("/rsvps", rsvpRouter);
 
     // ── Error handler ────────────────────────────────────────────────
 

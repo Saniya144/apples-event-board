@@ -203,9 +203,11 @@ class ExpressApp implements IApp {
         const eventId = typeof req.params.eventId === "string" ? req.params.eventId : "";
 
         await this.rsvpController.toggleRsvpFromForm(
+          req,
           res,
           eventId,
-          currentUser.userId
+          currentUser.userId,
+          currentUser.role
         );
       }),
     );

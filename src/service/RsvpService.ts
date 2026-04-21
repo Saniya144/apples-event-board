@@ -27,6 +27,11 @@ export interface IRsvpService {
   ): Promise<Result<RsvpToggleResult, RsvpServiceError>>;
 
   getWaitlistPosition(eventId: string, userId: string): Promise<number | null>;
+  
+  getRsvpStatus(
+    eventId: string,
+    userId: string
+  ): Promise<RsvpStatus | null>;
 }
 
 class RsvpService implements IRsvpService {
@@ -34,6 +39,14 @@ class RsvpService implements IRsvpService {
     private readonly rsvpRepository: IRsvpRepository,
     private readonly eventRepository: IEventRepository
   ) {}
+
+  async getRsvpStatus(
+  eventId: string,
+  userId: string
+): Promise<RsvpStatus | null> {
+  const rsvp = await this.rsvpRepository.findByEventAndUser(eventId, userId);
+  return rsvp ? rsvp.status : null;
+}
 
   async toggleRSVP(
     eventId: string,

@@ -134,3 +134,10 @@ export function EventUpdateFailedError(): EventError {
     "Failed to update event."
   );
 }
+
+export function EventSearchInvalidInputError(): EventError {
+  return makeEvent(
+    "EventSearchInvalidInputError",
+    "Search query must be a string."
+  );
+}

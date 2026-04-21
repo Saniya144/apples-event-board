@@ -302,13 +302,20 @@ class EventController implements IEventController {
       input.actingUserId
     );
 
+    const currentUserRsvpStatus = await this.rsvpService.getRsvpStatus(
+      input.eventId,
+      input.actingUserId
+    );
+
     res.status(200).render("events/detail", {
       event: result.value,
       session: input.session,
       pageError: null,
       waitlistPosition,
+      currentUserRsvpStatus,
     });
   }
+
 
   async updateEventFromForm(
     res: Response,

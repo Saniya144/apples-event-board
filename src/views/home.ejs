@@ -43,7 +43,9 @@
 <% if (events && events.length > 0) { %>
   <% events.forEach(event => { %>
     <div>
-      <b><%= event.title %></b><br />
+      <a href="/events/<%= event.id %>" class="font-bold text-blue-600 hover:underline">
+      <%= event.title %>
+    </a><br />
       <span><%= event.location %></span><br />
       <span><%= event.category %></span><br />
       <span><%= event.startDatetime %></span><br />

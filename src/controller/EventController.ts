@@ -321,7 +321,7 @@ class EventController implements IEventController {
 
     if (!result.ok) {
       const error = result.value as EventError;
-      res.status(400).render("partials/error", {
+      res.status(200).render("partials/error", {
         message: error.message,
         layout: false,
       });

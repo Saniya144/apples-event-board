@@ -3,8 +3,11 @@
 <% } else { %>
   <% 
     const now = new Date();
-    const upcoming = rsvps.filter(rsvp => new Date(rsvp.event.endDatetime) > now);
-    const past = rsvps.filter(rsvp => new Date(rsvp.event.endDatetime) <= now);
+    const byStartTime = (left, right) =>
+      new Date(left.event.startDatetime).getTime() - new Date(right.event.startDatetime).getTime();
+    const sorted = [...rsvps].sort(byStartTime);
+    const upcoming = sorted.filter(rsvp => rsvp.event.status !== 'cancelled' && new Date(rsvp.event.endDatetime) > now);
+    const past = sorted.filter(rsvp => rsvp.event.status === 'cancelled' || new Date(rsvp.event.endDatetime) <= now);
   %>
   
   <% if (upcoming.length > 0) { %>
@@ -38,8 +41,8 @@
                 class="cancel-rsvp-btn text-sm px-3 py-1 bg-red-50 text-red-600 rounded hover:bg-red-100"
                 hx-post="/rsvps/<%= rsvp.eventId %>/toggle"
                 hx-headers='{"X-CSRF": "TODO"}'
-                hx-swap="innerHTML"
-                hx-target="#rsvp-list"
+                hx-swap="delete"
+                hx-target="closest li"
               >
                 Cancel RSVP
               </button>

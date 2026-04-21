@@ -6,7 +6,6 @@ import {
   touchAppSession,
 } from "../session/AppSession";
 import { RSVPError } from "./errors";
-import { InMemoryRSVPRepository } from "./InMemoryRSVPRepository";
 
 export class RSVPController {
   constructor(private readonly rsvpService: RSVPService) {}
@@ -16,16 +15,9 @@ export class RSVPController {
     const user = getAuthenticatedUser(store);
     const browserSession = touchAppSession(store);
 
-    if (!user) {
+    if (!user || user.role !== "user") {
       res.status(403).send("Forbidden");
       return;
-    }
-
-    // Seed sample data for testing (remove in production)
-    const repo = (this.rsvpService as any)
-      .rsvpRepository as InMemoryRSVPRepository;
-    if (repo.seedSampleData) {
-      repo.seedSampleData(user.userId);
     }
 
     const result = await this.rsvpService.getRSVPsForUser(user.userId);

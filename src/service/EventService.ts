@@ -5,9 +5,17 @@ import type { UserRole } from "../auth/User";
 import {
   EventAuthorizationError,
   EventDependencyError,
+  EventEditEndBeforeStartError,
+  EventEditLocationRequiredError,
+  EventEditNotFoundError,
+  EventEditStartTimeInPastError,
+  EventEditTimeRequiredError,
+  EventEditTitleRequiredError,
+  EventEditUnauthorizedError,
   EventEndBeforeStartError,
   EventLocationRequiredError,
   EventNotFoundError,
+  EventPastEditError,
   EventStartTimeInPastError,
   EventStateError,
   EventTitleRequiredError,
@@ -85,7 +93,7 @@ export class EventService {
       startDatetime: begin.toISOString(),
       endDatetime: end.toISOString(),
       organizerId: user.userId,
-      status: "published",
+      status: "draft",
       capacity:
         input.capacity !== undefined && input.capacity !== ""
           ? Number(input.capacity)
@@ -191,13 +199,13 @@ export class EventService {
     }
 
     if (!existingResult.value) {
-      return Err(EventNotFoundError("Event not found."));
+      return Err(EventEditNotFoundError());
     }
 
     const event = existingResult.value;
 
     if (event.organizerId !== user.userId && user.role !== "admin") {
-      return Err(EventAuthorizationError("Not authorized to edit this event."));
+      return Err(EventEditUnauthorizedError());
     }
 
     if (event.status === "cancelled") {
@@ -205,26 +213,29 @@ export class EventService {
     }
 
     if (new Date(event.endDatetime) < new Date()) {
-      return Err(EventStateError("Cannot edit a past event."));
+      return Err(EventPastEditError());
     }
 
     if (!input.title || input.title.trim() === "") {
-      return Err(EventValidationError("Title is required."));
+      return Err(EventEditTitleRequiredError());
     }
 
     if (!input.location || input.location.trim() === "") {
-      return Err(EventValidationError("Location is required."));
+      return Err(EventEditLocationRequiredError());
     }
 
     const begin = new Date(input.startTime);
     const end = new Date(input.endTime);
 
     if (Number.isNaN(begin.getTime()) || Number.isNaN(end.getTime())) {
-      return Err(EventValidationError("Valid start and end times are required."));
+      return Err(EventEditTimeRequiredError());
     }
 
+    if(begin<new Date()) return Err(EventEditStartTimeInPastError());
+
     if (end < begin) {
-      return Err(EventValidationError("End time must be after start time."));
+      return Err(EventEditEndBeforeStartError());
+  
     }
 
     const updatedEvent: IEvent = {

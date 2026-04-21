@@ -393,8 +393,8 @@ describe("EventService.cancelEvent", () => {
         {
           title: "",
           location: "Worcester DC",
-          startTime: "2099-04-24T11:00",
-          endTime: "2099-04-25T11:00",
+          startTime: "2026-04-24T11:00",
+          endTime: "2026-04-25T11:00",
         },
         user
       );
@@ -410,8 +410,8 @@ describe("EventService.cancelEvent", () => {
         {
           title: "",
           location: "hey",
-          startTime: "2099-04-24T11:00",
-          endTime: "2099-04-25T11:00",
+          startTime: "2026-04-24T11:00",
+          endTime: "2026-04-25T11:00",
         },
         user
       );
@@ -426,8 +426,8 @@ describe("EventService.cancelEvent", () => {
         {
           title: "sports watch patry",
           location: "",
-          startTime: "2099-04-24T11:00",
-          endTime: "2099-04-25T11:00",
+          startTime: "2026-04-24T11:00",
+          endTime: "2026-04-25T11:00",
         },
         user
       );
@@ -445,7 +445,7 @@ describe("EventService.cancelEvent", () => {
           title: "Study Night",
           location: "Campus Center",
           startTime: "2020-01-01T10:00",
-          endTime: "2099-04-25T11:00",
+          endTime: "2026-04-25T11:00",
         },
         user
       );
@@ -501,6 +501,294 @@ describe("EventService.cancelEvent", () => {
       }
     });
 
+
+  
+  });
+
+
+  describe("EventSerivce update event", () => {
+    let repo: IEventRepository;
+    let service: EventService;
+
+    const owner = {
+      userId: "user1",
+      role: "organizer",
+    };
+
+    const user = {
+      userID: "user",
+      role: "organizerID",
+    };
+    beforeEach(() => {
+      repo = new InMemoryEventRepository();
+      service = new EventService(repo);
+    });
+    it("returns title required when no title ", async () => {
+      const result = await service.updateEvent(
+        "missing-id",
+        {
+          title: "new ",
+          location: "Worcester DC",
+          startTime: "2099-04-24T11:00",
+          endTime: "2099-04-25T11:00",
+        },
+        user
+      );
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.value.name).toBe("EventEditNotFoundError");
+        expect(result.value.message).toBe("Event not found.");
+      }
+    });
+
+    it("returns EventEditNotFoundError when event does not exist", async () => {
+      const result = await service.updateEvent(
+        "missing-id",
+        {
+          title: "Updated Event",
+          location: "New Hall",
+          startTime: "2099-04-26T10:00",
+          endTime: "2099-04-26T11:00",
+        },
+        owner
+      );
+  
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.value.name).toBe("EventEditNotFoundError");
+        expect(result.value.message).toBe("Event not found.");
+      }
+    });
+  
+    it("returns EventEditUnauthorizedError when non-owner tries to edit", async () => {
+      const created = await service.createEvent(
+        {
+          title: "Original Event",
+          location: "Campus Center",
+          startTime: "2099-04-25T10:00",
+          endTime: "2099-04-25T11:00",
+        },
+        owner
+      );
+  
+      expect(created.ok).toBe(true);
+      if (!created.ok) return;
+  
+      const result = await service.updateEvent(
+        created.value.id,
+        {
+          title: "Updated Event",
+          location: "New Hall",
+          startTime: "2099-04-26T10:00",
+          endTime: "2099-04-26T11:00",
+        },
+        user
+      );
+  
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.value.name).toBe("EventEditUnauthorizedError");
+        expect(result.value.message).toBe("Not authorized to edit this event.");
+      }
+    });
+  
+    it("returns EventEditTitleRequiredError when updated title is empty", async () => {
+      const created = await service.createEvent(
+        {
+          title: "Original Event",
+          location: "Campus Center",
+          startTime: "2026-04-25T10:00",
+          endTime: "2026-04-25T11:00",
+        },
+        owner
+      );
+  
+      expect(created.ok).toBe(true);
+      if (!created.ok) return;
+  
+      const result = await service.updateEvent(
+        created.value.id,
+        {
+          title: "",
+          location: "New ",
+          startTime: "2026-04-26T10:00",
+          endTime: "2026-04-26T11:00",
+        },
+        owner
+      );
+  
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.value.name).toBe("EventEditTitleRequiredError");
+       
+      }
+    });
+  
+    it("returns EventEditLocationRequiredError when updated location is empty", async () => {
+      const created = await service.createEvent(
+        {
+          title: "Original Event",
+          location: "Campus Center",
+          startTime: "2026-04-25T10:00",
+          endTime: "2026-04-25T11:00",
+        },
+        owner
+      );
+  
+      expect(created.ok).toBe(true);
+      if (!created.ok) return;
+  
+      const result = await service.updateEvent(
+        created.value.id,
+        {
+          title: "Updated Event",
+          location: "",
+          startTime: "2026-04-26T10:00",
+          endTime: "2026-04-26T11:00",
+        },
+        owner
+      );
+  
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.value.name).toBe("EventEditLocationRequiredError");
+       
+      }
+    });
+  
+    it("returns EventEditTimeRequiredError when updated dates are invalid", async () => {
+      const created = await service.createEvent(
+        {
+          title: "Original Event",
+          location: "Campus Center",
+          startTime: "2099-04-25T10:00",
+          endTime: "2099-04-25T11:00",
+        },
+        owner
+      );
+  
+      expect(created.ok).toBe(true);
+      if (!created.ok) return;
+  
+      const result = await service.updateEvent(
+        created.value.id,
+        {
+          title: "Updated Event",
+          location: "New Hall",
+          startTime: "bad-date",
+          endTime: "bad-date",
+        },
+        owner
+      );
+  
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.value.name).toBe("EventEditTimeRequiredError");
+        
+      }
+    });
+  
+    it("returns EventEditStartTimeInPastError when updated start time is in the past", async () => {
+      const created = await service.createEvent(
+        {
+          title: "Original Event",
+          location: "Campus Center",
+          startTime: "2026-04-25T10:00",
+          endTime: "2026-04-25T11:00",
+        },
+        owner
+      );
+  
+      expect(created.ok).toBe(true);
+      if (!created.ok) return;
+  
+      const result = await service.updateEvent(
+        created.value.id,
+        {
+          title: "Updated Event",
+          location: "New Hall",
+          startTime: "2020-01-01T10:00",
+          endTime: "2099-04-26T11:00",
+        },
+        owner
+      );
+  
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.value.name).toBe("EventEditStartTimeInPastError");
+
+      }
+    });
+  
+    it("returns EventEditEndBeforeStartError when updated end time is before start time", async () => {
+      const created = await service.createEvent(
+        {
+          title: "Original Event",
+          location: "Campus Center",
+          startTime: "2026-04-25T10:00",
+          endTime: "2026-04-25T11:00",
+        },
+        owner
+      );
+  
+      expect(created.ok).toBe(true);
+      if (!created.ok) return;
+  
+      const result = await service.updateEvent(
+        created.value.id,
+        {
+          title: "Updated Event",
+          location: "New Hall",
+          startTime: "2026-04-25T11:00",
+          endTime: "2025-04-26T10:00",
+        },
+        owner
+      );
+  
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.value.name).toBe("EventEditEndBeforeStartError");
+        expect(result.value.message).toBe("End time must be after start time.");
+      }
+    });
+  
+    it("updates event successfully when input is valid and user is authorized", async () => {
+      const created = await service.createEvent(
+        {
+          title: "Original Event",
+          location: "Campus Center",
+          startTime: "2099-04-25T10:00",
+          endTime: "2099-04-25T11:00",
+          category: "academic",
+          description: "Old desc",
+        },
+        owner
+      );
+  
+      expect(created.ok).toBe(true);
+      if (!created.ok) return;
+  
+      const result = await service.updateEvent(
+        created.value.id,
+        {
+          title: "Updated Event",
+          location: "New Hall",
+          category: "social",
+          description: "Updated desc",
+          startTime: "2099-04-26T10:00",
+          endTime: "2099-04-26T11:00",
+        },
+        owner
+      );
+  
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value.title).toBe("Updated Event");
+        expect(result.value.location).toBe("New Hall");
+        expect(result.value.category).toBe("social");
+        expect(result.value.description).toBe("Updated desc");
+      }
+    });
 
   
   });

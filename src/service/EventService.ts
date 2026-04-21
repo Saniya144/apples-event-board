@@ -23,6 +23,7 @@ import {
   EventSearchInvalidInputError,
   type EventError,
 } from "../events/errors";
+import { ParsedQs } from "qs";
 
 
 interface IOrganizerLookup {
@@ -149,13 +150,13 @@ export class EventService {
   }
 
   async searchPublishedUpcomingEvents(
-    query?: string | string[] | undefined
+    query?: string | ParsedQs | (string | ParsedQs)[] | undefined
   ): Promise<Result<IEvent[], EventError>> {
     try {
       if (query !== undefined && typeof query !== "string") {
         return Err(EventSearchInvalidInputError());
       }
-      
+
       const events = await this.repo.getAll();
       const now = new Date();
 

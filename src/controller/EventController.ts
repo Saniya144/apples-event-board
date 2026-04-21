@@ -4,6 +4,7 @@ import type { IAppBrowserSession } from "../session/AppSession";
 import { type EventError } from "../events/errors";
 import { EventService } from "../service/EventService";
 import type { IRsvpService } from "../service/RsvpService";
+import { ParsedQs } from "qs";
 
 export interface ShowEventDetailInput {
   eventId: string;
@@ -34,7 +35,7 @@ export interface IEventController {
   searchEvents(
     res: Response,
     session: IAppBrowserSession,
-    query?: string | string[] | undefined
+    query?: string | ParsedQs | (string | ParsedQs)[] | undefined
   ): Promise<void>;
 
   getEventByID(
@@ -190,7 +191,7 @@ class EventController implements IEventController {
   async searchEvents(
     res: Response,
     session: IAppBrowserSession,
-    query?: string | string[] | undefined
+    query?: string | ParsedQs | (string | ParsedQs)[] | undefined
   ): Promise<void> {
     const result = await this.service.searchPublishedUpcomingEvents(query);
 

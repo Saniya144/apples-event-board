@@ -4,6 +4,7 @@ import type { IAppBrowserSession } from "../session/AppSession";
 import { type EventError } from "../events/errors";
 import { EventService } from "../service/EventService";
 import type { IRsvpService } from "../service/RsvpService";
+import { ParsedQs } from "qs";
 
 export interface ShowEventDetailInput {
   eventId: string;
@@ -34,7 +35,7 @@ export interface IEventController {
   searchEvents(
     res: Response,
     session: IAppBrowserSession,
-    query?: string
+    query?: string | ParsedQs | (string | ParsedQs)[] | undefined
   ): Promise<void>;
 
   getEventByID(
@@ -74,7 +75,8 @@ class EventController implements IEventController {
       error.name === "EventEditLocationRequiredError" ||
       error.name === "EventEditTimeRequiredError" ||
       error.name === "EventEditStartTimeInPastError" ||
-      error.name === "EventEditEndBeforeStartError"
+      error.name === "EventEditEndBeforeStartError" ||
+      error.name === "EventSearchInvalidInputError"
     ) {
       return 400;
     }
@@ -189,13 +191,17 @@ class EventController implements IEventController {
   async searchEvents(
     res: Response,
     session: IAppBrowserSession,
-    query?: string
+    query?: string | ParsedQs | (string | ParsedQs)[] | undefined
   ): Promise<void> {
     const result = await this.service.searchPublishedUpcomingEvents(query);
 
     if (!result.ok) {
-      res.status(500).render("partials/error", {
-        message: "Failed to search events.",
+      const error = result.value as EventError;
+      const status = this.mapErrorStatus(error);
+
+      res.status(status).render("partials/error", {
+        message: error.message,
+        name: error.name,
         layout: false,
       });
       return;
@@ -205,7 +211,7 @@ class EventController implements IEventController {
       session,
       pageError: null,
       events: result.value,
-      searchQuery: query || "",
+      searchQuery: typeof query === "string" ? query : "",
       filters: {},
     });
   }

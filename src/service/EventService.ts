@@ -20,8 +20,10 @@ import {
   EventStateError,
   EventTitleRequiredError,
   EventValidationError,
+  EventSearchInvalidInputError,
   type EventError,
 } from "../events/errors";
+import { ParsedQs } from "qs";
 
 
 interface IOrganizerLookup {
@@ -148,9 +150,13 @@ export class EventService {
   }
 
   async searchPublishedUpcomingEvents(
-    query?: string
+    query?: string | ParsedQs | (string | ParsedQs)[]
   ): Promise<Result<IEvent[], EventError>> {
     try {
+      if (Array.isArray(query) || typeof query === "object") {
+        return Err(EventSearchInvalidInputError());
+      }
+
       const events = await this.repo.getAll();
       const now = new Date();
 
@@ -161,7 +167,7 @@ export class EventService {
         );
       });
 
-      if (!query || query.trim() === "") {
+      if (typeof query !== "string" || query.trim() === "") {
         return Ok(filtered);
       }
 

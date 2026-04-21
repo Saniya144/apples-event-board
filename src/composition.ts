@@ -40,7 +40,7 @@ export function createComposedApp(logger?: ILoggingService): IApp {
   const rsvpController = CreateRsvpController(rsvpService, resolvedLogger);
 
   // Organizer wiring - pass the shared event repository
-  const organizerRouter = createOrganizerRouter(eventRepository);
+  const organizerRouter = createOrganizerRouter(eventRepository, rsvpRepository);
 
   // CreateApp only expects authController and logger
   // The other controllers need to be registered another way (likely in app.ts routes)

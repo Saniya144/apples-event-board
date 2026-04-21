@@ -88,7 +88,7 @@ export class InMemoryEventRepository implements IEventRepository {
       capacity: 20,
       startDatetime: "2026-04-16T18:00:00.000Z",
       endDatetime: "2026-04-16T20:00:00.000Z",
-      organizerId: "user-staff",
+      organizerId: "user-admin",
       createdAt: "2026-04-13T10:00:00.000Z",
       updatedAt: "2026-04-13T10:00:00.000Z",
     },

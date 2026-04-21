@@ -33,7 +33,7 @@ function buildApp(user: any | null) {
   const eventService = new EventService(eventRepo);
   const eventController = CreateEventController(eventService, rsvpService);
 
-  app.post("/events/new", async (req, res) => {
+  app.post("/events/:id/edit", async (req, res) => {
     const session = (req as any).session.app;
 
     if (!session?.authenticatedUser) {
@@ -44,28 +44,41 @@ function buildApp(user: any | null) {
       return;
     }
 
-    await eventController.createEventFromForm(res, req.body, session);
+    await eventController.updateEventFromForm(
+      res,
+      req.params.id,
+      req.body,
+      session
+    );
   });
 
   return app;
 }
 
-describe("POST /events/new", () => {
+describe("POST /events/:id/edit", () => {
   const user = {
-    userId: "user1",
+    userId: "user-staff",
     email: "staff@app.test",
     displayName: "Staff User",
-    role: "admin",
+    role: "staff",
   };
 
-  it("redirects on successful create", async () => {
+  const user2 = {
+    userId: "user2@app.test",
+    email: "user2@app.test",
+    displayName: "Staff User 2",
+    role: "staff",
+  };
+
+  it("redirects on successful edit", async () => {
     const app = buildApp(user);
 
-    const response = await request(app).post("/events/new").send({
-      title: "Study Session",
-      location: "Campus",
-      startTime: "2026-04-25T10:00",
-      endTime: "2026-04-25T11:00",
+    const response = await request(app).post("/events/event-2/edit").send({
+      title: "Studying",
+      location: "Woo",
+      startTime: "2026-04-22T19:00",
+      endTime: "2026-04-22T21:00",
+      description: "Updated description",
     });
 
     expect(response.status).toBe(302);
@@ -75,71 +88,71 @@ describe("POST /events/new", () => {
   it("renders partial error when end time is before start time", async () => {
     const app = buildApp(user);
 
-    const response = await request(app).post("/events/new").send({
+    const response = await request(app).post("/events/event-2/edit").send({
       title: "Study Night",
       location: "Campus Center",
-      startTime: "2026-04-25T11:00",
-      endTime: "2026-04-25T10:00",
+      startTime: "2026-04-22T21:00",
+      endTime: "2026-04-22T19:00",
     });
 
     expect(response.status).toBe(200);
-    expect(response.text).toContain("EventEndBeforeStartError");
+    expect(response.text).toContain("EventEditEndBeforeStartError");
     expect(response.text).toContain("End time must be after start time.");
   });
 
   it("renders partial error when title is missing", async () => {
     const app = buildApp(user);
 
-    const response = await request(app).post("/events/new").send({
+    const response = await request(app).post("/events/event-2/edit").send({
       title: "",
       location: "Campus Center",
-      startTime: "2026-04-25T10:00",
-      endTime: "2026-04-25T11:00",
+      startTime: "2026-04-22T19:00",
+      endTime: "2026-04-22T21:00",
     });
 
     expect(response.status).toBe(200);
-    expect(response.text).toContain("EventTitleRequiredError");
+    expect(response.text).toContain("EventEditTitleRequiredError");
     expect(response.text).toContain("Title is required.");
   });
 
   it("renders partial error when location is missing", async () => {
     const app = buildApp(user);
 
-    const response = await request(app).post("/events/new").send({
+    const response = await request(app).post("/events/event-2/edit").send({
       title: "Study Night",
       location: "",
-      startTime: "2026-04-25T10:00",
-      endTime: "2026-04-25T11:00",
+      startTime: "2026-04-22T19:00",
+      endTime: "2026-04-22T21:00",
     });
 
     expect(response.status).toBe(200);
-    expect(response.text).toContain("EventLocationRequiredError");
+    expect(response.text).toContain("EventEditLocationRequiredError");
     expect(response.text).toContain("Location is required.");
   });
 
-  it("renders partial error when start time is in the past", async () => {
-    const app = buildApp(user);
+  it("renders partial error when user is not authorized to edit", async () => {
+    const app = buildApp(user2);
 
-    const response = await request(app).post("/events/new").send({
-      title: "Study Night",
-      location: "Campus Center",
-      startTime: "2009-04-28T11:00",
-      endTime: "2026-04-25T10:00",
+    const response = await request(app).post("/events/event-2/edit").send({
+      title: "basketball",
+      location: "rec",
+      startTime: "2026-04-22T19:00",
+      endTime: "2026-04-22T21:00",
     });
 
     expect(response.status).toBe(200);
-    expect(response.text).toContain("EventStartTimeInPastError");
-    expect(response.text).toContain("Start time cannot be in the past.");
+    expect(response.text).toContain("EventEditUnauthorizedError");
+    expect(response.text).toContain("Not authorized to edit this event.");
   });
 
   it("blocks unauthenticated users", async () => {
     const app = buildApp(null);
 
-    const response = await request(app).post("/events/new").send({
-      title: "Study Night",
-      location: "Campus Center",
-      startTime: "2026-04-25T10:00",
-      endTime: "2026-04-25T11:00",
+    const response = await request(app).post("/events/event-2/edit").send({
+      title: "club meeting",
+      location: "LGRC",
+      startTime: "2026-04-22T19:00",
+      endTime: "2026-04-22T21:00",
     });
 
     expect(response.status).toBe(401);

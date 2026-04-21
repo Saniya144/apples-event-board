@@ -20,6 +20,7 @@ import {
   EventStateError,
   EventTitleRequiredError,
   EventValidationError,
+  EventSearchInvalidInputError,
   type EventError,
 } from "../events/errors";
 
@@ -148,9 +149,13 @@ export class EventService {
   }
 
   async searchPublishedUpcomingEvents(
-    query?: string
+    query?: string | string[] | undefined
   ): Promise<Result<IEvent[], EventError>> {
     try {
+      if (query !== undefined && typeof query !== "string") {
+        return Err(EventSearchInvalidInputError());
+      }
+      
       const events = await this.repo.getAll();
       const now = new Date();
 

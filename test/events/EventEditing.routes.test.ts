@@ -95,7 +95,7 @@ describe("POST /events/:id/edit", () => {
       endTime: "2026-04-22T19:00",
     });
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(400);
     expect(response.text).toContain("EventEditEndBeforeStartError");
     expect(response.text).toContain("End time must be after start time.");
   });
@@ -110,7 +110,7 @@ describe("POST /events/:id/edit", () => {
       endTime: "2026-04-22T21:00",
     });
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(400);
     expect(response.text).toContain("EventEditTitleRequiredError");
     expect(response.text).toContain("Title is required.");
   });
@@ -125,7 +125,7 @@ describe("POST /events/:id/edit", () => {
       endTime: "2026-04-22T21:00",
     });
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(400);
     expect(response.text).toContain("EventEditLocationRequiredError");
     expect(response.text).toContain("Location is required.");
   });
@@ -140,7 +140,7 @@ describe("POST /events/:id/edit", () => {
       endTime: "2026-04-22T21:00",
     });
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(403);
     expect(response.text).toContain("EventEditUnauthorizedError");
     expect(response.text).toContain("Not authorized to edit this event.");
   });

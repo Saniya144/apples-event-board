@@ -22,7 +22,7 @@ function buildApp(user: any | null) {
   });
 
   app.use(Layouts);
-  app.use(express.json())
+  app.use(express.json());
   app.set("view engine", "ejs");
   app.set("views", path.join(process.cwd(), "src/views"));
   app.set("layout", "layouts/base");
@@ -72,7 +72,7 @@ describe("POST /events/new", () => {
     expect(response.header.location).toBe("/home");
   });
 
-  it("renders partial error when input is invalid", async () => {
+  it("renders partial error when end time is before start time", async () => {
     const app = buildApp(user);
 
     const response = await request(app).post("/events/new").send({
@@ -83,11 +83,41 @@ describe("POST /events/new", () => {
     });
 
     expect(response.status).toBe(200);
-    expect(response.text).toContain("Error");
+    expect(response.text).toContain("EventEndBeforeStartError");
     expect(response.text).toContain("End time must be after start time.");
   });
 
-  it("renders partial error when input is invalid where start is before present", async () => {
+  it("renders partial error when title is missing", async () => {
+    const app = buildApp(user);
+
+    const response = await request(app).post("/events/new").send({
+      title: "",
+      location: "Campus Center",
+      startTime: "2026-04-25T10:00",
+      endTime: "2026-04-25T11:00",
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.text).toContain("EventTitleRequiredError");
+    expect(response.text).toContain("Title is required.");
+  });
+
+  it("renders partial error when location is missing", async () => {
+    const app = buildApp(user);
+
+    const response = await request(app).post("/events/new").send({
+      title: "Study Night",
+      location: "",
+      startTime: "2026-04-25T10:00",
+      endTime: "2026-04-25T11:00",
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.text).toContain("EventLocationRequiredError");
+    expect(response.text).toContain("Location is required.");
+  });
+
+  it("renders partial error when start time is in the past", async () => {
     const app = buildApp(user);
 
     const response = await request(app).post("/events/new").send({
@@ -98,8 +128,8 @@ describe("POST /events/new", () => {
     });
 
     expect(response.status).toBe(200);
-    expect(response.text).toContain("Error");
-    
+    expect(response.text).toContain("EventStartTimeInPastError");
+    expect(response.text).toContain("Start time cannot be in the past.");
   });
 
   it("blocks unauthenticated users", async () => {

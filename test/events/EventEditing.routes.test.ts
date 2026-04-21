@@ -22,7 +22,7 @@ function buildApp(user: any | null) {
   });
 
   app.use(Layouts);
-  app.use(express.json())
+  app.use(express.json());
   app.set("view engine", "ejs");
   app.set("views", path.join(process.cwd(), "src/views"));
   app.set("layout", "layouts/base");
@@ -33,10 +33,9 @@ function buildApp(user: any | null) {
   const eventService = new EventService(eventRepo);
   const eventController = CreateEventController(eventService, rsvpService);
 
-
   app.post("/events/:id/edit", async (req, res) => {
     const session = (req as any).session.app;
-  
+
     if (!session?.authenticatedUser) {
       res.status(401).render("partials/error", {
         message: "Please log in to continue.",
@@ -44,14 +43,13 @@ function buildApp(user: any | null) {
       });
       return;
     }
-  
+
     await eventController.updateEventFromForm(
       res,
       req.params.id,
       req.body,
       session
     );
-   
   });
 
   return app;
@@ -59,74 +57,102 @@ function buildApp(user: any | null) {
 
 describe("POST /events/:id/edit", () => {
   const user = {
-  userId: "user-staff",
-  email: "staff@app.test",
-  displayName: "Staff User",
-  role: "staff",
-};
+    userId: "user-staff",
+    email: "staff@app.test",
+    displayName: "Staff User",
+    role: "staff",
+  };
 
-const user2 = {
-  userId: "user2@app.test",
-  email: "user2@app.test",
-  displayName: "Staff User 2",
-  role: "staff",
-};
-it("redirects on successful edit", async () => {
-  const app = buildApp(user);
+  const user2 = {
+    userId: "user2@app.test",
+    email: "user2@app.test",
+    displayName: "Staff User 2",
+    role: "staff",
+  };
 
+  it("redirects on successful edit", async () => {
+    const app = buildApp(user);
 
-  const response = await request(app).post("/events/event-2/edit").send({
-    title: "Studying",
-    location: "Woo",
-    startTime: "2026-04-25T10:00",
-    endTime: "2026-04-25T11:00",
-    description: "Updated description",
+    const response = await request(app).post("/events/event-2/edit").send({
+      title: "Studying",
+      location: "Woo",
+      startTime: "2026-04-22T19:00",
+      endTime: "2026-04-22T21:00",
+      description: "Updated description",
+    });
+
+    expect(response.status).toBe(302);
+    expect(response.header.location).toBe("/home");
   });
 
-  expect(response.status).toBe(302);
-  expect(response.header.location).toBe("/home");
-});
-
-  it("renders partial error when updated input is invalid", async () => {
+  it("renders partial error when end time is before start time", async () => {
     const app = buildApp(user);
 
     const response = await request(app).post("/events/event-2/edit").send({
       title: "Study Night",
       location: "Campus Center",
-      startTime: "2026-05-26T11:00",
-      endTime: "2026-05-26T10:00",
+      startTime: "2026-04-22T21:00",
+      endTime: "2026-04-22T19:00",
     });
-    console.log(response.text);
 
     expect(response.status).toBe(200);
-    expect(response.text).toContain("Error");
+    expect(response.text).toContain("EventEditEndBeforeStartError");
     expect(response.text).toContain("End time must be after start time.");
+  });
+
+  it("renders partial error when title is missing", async () => {
+    const app = buildApp(user);
+
+    const response = await request(app).post("/events/event-2/edit").send({
+      title: "",
+      location: "Campus Center",
+      startTime: "2026-04-22T19:00",
+      endTime: "2026-04-22T21:00",
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.text).toContain("EventEditTitleRequiredError");
+    expect(response.text).toContain("Title is required.");
+  });
+
+  it("renders partial error when location is missing", async () => {
+    const app = buildApp(user);
+
+    const response = await request(app).post("/events/event-2/edit").send({
+      title: "Study Night",
+      location: "",
+      startTime: "2026-04-22T19:00",
+      endTime: "2026-04-22T21:00",
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.text).toContain("EventEditLocationRequiredError");
+    expect(response.text).toContain("Location is required.");
   });
 
   it("renders partial error when user is not authorized to edit", async () => {
     const app = buildApp(user2);
 
-    const response = await request(app).post("/events/event-1/edit").send({
+    const response = await request(app).post("/events/event-2/edit").send({
       title: "basketball",
       location: "rec",
-      startTime: "2009-04-28T11:00",
-      endTime: "2026-04-25T10:00",
+      startTime: "2026-04-22T19:00",
+      endTime: "2026-04-22T21:00",
     });
 
     expect(response.status).toBe(200);
-    expect(response.text).toContain("Error");
-    expect(response.text).toContain("Not authorized to edit this event");
-    
+    expect(response.text).toContain("EventEditUnauthorizedError");
+    expect(response.text).toContain("Not authorized to edit this event.");
   });
 
   it("blocks unauthenticated users", async () => {
     const app = buildApp(null);
 
-    const response = await request(app).post("/events/event-1/edit").send({
+    const response = await request(app).post("/events/event-2/edit").send({
       title: "club meeting",
       location: "LGRC",
-      startTime: "2045-04-25T10:00",
-      endTime: "2045-04-25T11:00",
+      startTime: "2026-04-22T19:00",
+      endTime: "2026-04-22T21:00",
     });
 
     expect(response.status).toBe(401);

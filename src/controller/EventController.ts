@@ -124,6 +124,7 @@ class EventController implements IEventController {
       const status = this.mapErrorStatus(error);
       res.status(200).render("partials/error", {
         message: error.message,
+        name: error.name,
         layout: false,
       });
       return;
@@ -323,6 +324,7 @@ class EventController implements IEventController {
       const error = result.value as EventError;
       res.status(200).render("partials/error", {
         message: error.message,
+        name: error.name,
         layout: false,
       });
       return;

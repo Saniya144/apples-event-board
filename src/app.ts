@@ -317,7 +317,7 @@ class ExpressApp implements IApp {
         }
 
         const session = recordPageView(sessionStore(req));
-        const q = typeof req.query.q === "string" ? req.query.q : "";
+        const q = req.query.q;
 
         await this.eventController.searchEvents(res, session, q);
       })

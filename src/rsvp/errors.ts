@@ -18,3 +18,10 @@ export class RsvpNotAllowedError extends Error {
     this.name = "RsvpNotAllowedError";
   }
 }
+
+export class RsvpForbiddenError extends Error {
+  constructor(message = "Your role cannot RSVP to events.") {
+    super(message);
+    this.name = "RsvpForbiddenError";
+  }
+}

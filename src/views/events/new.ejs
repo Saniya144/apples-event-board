@@ -5,6 +5,7 @@
   hx-post="/events/new"
   hx-target="#form-error"
   hx-swap="innerHTML"
+  //hx-on:response-error="document.getElementById('form-error').innerHTML = event.detail.xhr.response"
 >
   <input name = "title" placeholder="Title" />
   <br /><br />

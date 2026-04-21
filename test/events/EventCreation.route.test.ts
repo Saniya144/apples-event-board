@@ -82,7 +82,7 @@ describe("POST /events/new", () => {
       endTime: "2026-04-25T10:00",
     });
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(400);
     expect(response.text).toContain("EventEndBeforeStartError");
     expect(response.text).toContain("End time must be after start time.");
   });
@@ -97,7 +97,7 @@ describe("POST /events/new", () => {
       endTime: "2026-04-25T11:00",
     });
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(400);
     expect(response.text).toContain("EventTitleRequiredError");
     expect(response.text).toContain("Title is required.");
   });
@@ -112,7 +112,7 @@ describe("POST /events/new", () => {
       endTime: "2026-04-25T11:00",
     });
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(400);
     expect(response.text).toContain("EventLocationRequiredError");
     expect(response.text).toContain("Location is required.");
   });
@@ -127,7 +127,7 @@ describe("POST /events/new", () => {
       endTime: "2026-04-25T10:00",
     });
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(400);
     expect(response.text).toContain("EventStartTimeInPastError");
     expect(response.text).toContain("Start time cannot be in the past.");
   });

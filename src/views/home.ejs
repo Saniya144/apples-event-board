@@ -46,7 +46,7 @@
       <b><%= event.title %></b><br />
       <span><%= event.location %></span><br />
       <span><%= event.category %></span><br />
-      <span><%= event.startDatetime %></span><br />
+      <span><strong>Start:</strong> <%= new Date(event.startDatetime).toLocaleString() %></span><br />
       <span><%= event.description %></span><br />
       <span>Created by: <%= event.organizerId %></span><br />
       <a href="/events/<%= event.id %>/edit">Edit</a>

@@ -393,8 +393,8 @@ describe("EventService.cancelEvent", () => {
         {
           title: "",
           location: "Worcester DC",
-          startTime: "2099-04-24T11:00",
-          endTime: "2099-04-25T11:00",
+          startTime: "2026-04-24T11:00",
+          endTime: "2026-04-25T11:00",
         },
         user
       );
@@ -410,8 +410,8 @@ describe("EventService.cancelEvent", () => {
         {
           title: "",
           location: "hey",
-          startTime: "2099-04-24T11:00",
-          endTime: "2099-04-25T11:00",
+          startTime: "2026-04-24T11:00",
+          endTime: "2026-04-25T11:00",
         },
         user
       );
@@ -426,8 +426,8 @@ describe("EventService.cancelEvent", () => {
         {
           title: "sports watch patry",
           location: "",
-          startTime: "2099-04-24T11:00",
-          endTime: "2099-04-25T11:00",
+          startTime: "2026-04-24T11:00",
+          endTime: "2026-04-25T11:00",
         },
         user
       );
@@ -445,7 +445,7 @@ describe("EventService.cancelEvent", () => {
           title: "Study Night",
           location: "Campus Center",
           startTime: "2020-01-01T10:00",
-          endTime: "2099-04-25T11:00",
+          endTime: "2026-04-25T11:00",
         },
         user
       );

@@ -150,10 +150,10 @@ export class EventService {
   }
 
   async searchPublishedUpcomingEvents(
-    query?: string | ParsedQs | (string | ParsedQs)[] | undefined
+    query?: string | ParsedQs | (string | ParsedQs)[]
   ): Promise<Result<IEvent[], EventError>> {
     try {
-      if (query !== undefined && typeof query !== "string") {
+      if (Array.isArray(query) || typeof query === "object") {
         return Err(EventSearchInvalidInputError());
       }
 
@@ -167,7 +167,7 @@ export class EventService {
         );
       });
 
-      if (!query || query.trim() === "") {
+      if (typeof query !== "string" || query.trim() === "") {
         return Ok(filtered);
       }
 

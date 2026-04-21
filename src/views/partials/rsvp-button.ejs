@@ -1,0 +1,49 @@
+<!-- src/views/partials/rsvp-button.ejs -->
+<div id="rsvp-section">
+  <% if (rsvpStatus === "going") { %>
+    <form
+      hx-post="/events/<%= eventId %>/rsvp"
+      hx-target="#rsvp-section"
+      hx-swap="outerHTML"
+    >
+      <button
+        type="submit"
+        class="rounded-lg bg-green-600 text-white px-4 py-2 hover:bg-green-700 transition-colors"
+      >
+        ✓ Going — Click to Cancel
+      </button>
+    </form>
+
+  <% } else if (rsvpStatus === "waitlisted") { %>
+    <form
+      hx-post="/events/<%= eventId %>/rsvp"
+      hx-target="#rsvp-section"
+      hx-swap="outerHTML"
+    >
+      <button
+        type="submit"
+        class="rounded-lg bg-yellow-500 text-white px-4 py-2 hover:bg-yellow-600 transition-colors"
+      >
+        ⏳ Waitlisted — Click to Leave Waitlist
+      </button>
+    </form>
+
+  <% } else { %>
+    <form
+      hx-post="/events/<%= eventId %>/rsvp"
+      hx-target="#rsvp-section"
+      hx-swap="outerHTML"
+    >
+      <button
+        type="submit"
+        class="rounded-lg bg-blue-600 text-white px-4 py-2 hover:bg-blue-700 transition-colors"
+      >
+        RSVP to this Event
+      </button>
+    </form>
+  <% } %>
+
+  <% if (rsvpError) { %>
+    <p class="text-sm text-red-600 mt-2"><%= rsvpError %></p>
+  <% } %>
+</div>

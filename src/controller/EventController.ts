@@ -64,14 +64,53 @@ class EventController implements IEventController {
   ) {}
 
   private mapErrorStatus(error: EventError): number {
-    if (error.name === "EventNotFoundError") return 404;
-    if (error.name === "EventValidationError") return 400;
-    if (error.name === "EventAuthorizationError") return 403;
-    if (error.name === "EventStateError") return 400;
-    if (error.name === "EventDependencyError") return 500;
+    if (
+      error.name === "EventTitleRequiredError" ||
+      error.name === "EventLocationRequiredError" ||
+      error.name === "EventTimeRequiredError" ||
+      error.name === "EventStartTimeInPastError" ||
+      error.name === "EventEndBeforeStartError" ||
+      error.name === "EventEditTitleRequiredError" ||
+      error.name === "EventEditLocationRequiredError" ||
+      error.name === "EventEditTimeRequiredError" ||
+      error.name === "EventEditStartTimeInPastError" ||
+      error.name === "EventEditEndBeforeStartError"
+    ) {
+      return 400;
+    }
+  
+    if (
+      error.name === "EventEditUnauthorizedError" ||
+      error.name === "EventAuthorizationError"
+    ) {
+      return 403;
+    }
+  
+    if (
+      error.name === "EventEditNotFoundError" ||
+      error.name === "EventNotFoundError"
+    ) {
+      return 404;
+    }
+  
+    if (
+      error.name === "EventCancelledEditError" ||
+      error.name === "EventPastEditError" ||
+      error.name === "EventStateError"
+    ) {
+      return 400;
+    }
+  
+    if (
+      error.name === "EventCreateFailedError" ||
+      error.name === "EventUpdateFailedError" ||
+      error.name === "EventDependencyError"
+    ) {
+      return 500;
+    }
+  
     return 500;
   }
-
   async createEventFromForm(
     res: Response,
     input: any,
@@ -83,7 +122,7 @@ class EventController implements IEventController {
     if (!result.ok) {
       const error = result.value as EventError;
       const status = this.mapErrorStatus(error);
-      res.status(status).render("partials/error", {
+      res.status(200).render("partials/error", {
         message: error.message,
         layout: false,
       });

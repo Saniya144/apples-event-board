@@ -67,3 +67,70 @@ export function EventCreateFailedError(): EventError {
   return makeEvent("EventCreateFailedError", "Failed to create event.");
 }
 
+
+export function EventEditNotFoundError(): EventError {
+  return makeEvent("EventEditNotFoundError", "Event not found.");
+}
+
+export function EventEditUnauthorizedError(): EventError {
+  return makeEvent(
+    "EventEditUnauthorizedError",
+    "Not authorized to edit this event."
+  );
+}
+
+export function EventCancelledEditError(): EventError {
+  return makeEvent(
+    "EventCancelledEditError",
+    "Cannot edit a cancelled event."
+  );
+}
+
+export function EventPastEditError(): EventError {
+  return makeEvent(
+    "EventPastEditError",
+    "Cannot edit a past event."
+  );
+}
+
+export function EventEditTitleRequiredError(): EventError {
+  return makeEvent(
+    "EventEditTitleRequiredError",
+    "Title is required."
+  );
+}
+
+export function EventEditLocationRequiredError(): EventError {
+  return makeEvent(
+    "EventEditLocationRequiredError",
+    "Location is required."
+  );
+}
+
+export function EventEditTimeRequiredError(): EventError {
+  return makeEvent(
+    "EventEditTimeRequiredError",
+    "Valid start and end times are required."
+  );
+}
+
+export function EventEditStartTimeInPastError(): EventError {
+  return makeEvent(
+    "EventEditStartTimeInPastError",
+    "Start time cannot be in the past."
+  );
+}
+
+export function EventEditEndBeforeStartError(): EventError {
+  return makeEvent(
+    "EventEditEndBeforeStartError",
+    "End time must be after start time."
+  );
+}
+
+export function EventUpdateFailedError(): EventError {
+  return makeEvent(
+    "EventUpdateFailedError",
+    "Failed to update event."
+  );
+}

@@ -141,3 +141,17 @@ export function EventSearchInvalidInputError(): EventError {
     "Search query must be a string."
   );
 }
+
+export function EventFilterInvalidCategoryError(): EventError {
+  return makeEvent(
+    "EventFilterInvalidCategoryError",
+    "Invalid category filter."
+  );
+}
+
+export function EventFilterInvalidDateError(): EventError {
+  return makeEvent(
+    "EventFilterInvalidDateError",
+    "Invalid date filter."
+  );
+}

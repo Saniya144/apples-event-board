@@ -21,6 +21,8 @@ import {
   EventTitleRequiredError,
   EventValidationError,
   EventSearchInvalidInputError,
+  EventFilterInvalidCategoryError,
+  EventFilterInvalidDateError,
   type EventError,
 } from "../events/errors";
 import { ParsedQs } from "qs";
@@ -117,29 +119,68 @@ export class EventService {
   }
 
   async getFilteredPublishedEvents(filters: {
-    category?: string;
-    date?: string;
+    category?: string | ParsedQs | (string | ParsedQs)[];
+    date?: string | ParsedQs | (string | ParsedQs)[];
   }): Promise<Result<IEvent[], EventError>> {
     try {
+      if (Array.isArray(filters.category) || typeof filters.category === "object") {
+        return Err(EventFilterInvalidCategoryError());
+      }
+
+      if (Array.isArray(filters.date) || typeof filters.date === "object") {
+        return Err(EventFilterInvalidDateError());
+      }
+
+      const validDates = ["all", "week", "weekend"];
+
+      if (
+        typeof filters.date === "string" &&
+        filters.date.trim() !== "" &&
+        !validDates.includes(filters.date.trim())
+      ) {
+        return Err(EventFilterInvalidDateError());
+      }
+
       const events = await this.repo.getAll();
+      const now = new Date();
 
-      let filtered = events.filter((event) => event.status === "published");
+      let filtered = events.filter((event) => {
+        return (
+          event.status === "published" &&
+          new Date(event.startDatetime) >= now
+        );
+      });
 
-      if (filters.category && filters.category.trim() !== "") {
+      if (typeof filters.category === "string" && filters.category.trim() !== "") {
         const category = filters.category.trim().toLowerCase();
         filtered = filtered.filter(
           (event) => event.category.toLowerCase() === category
         );
       }
 
-      if (filters.date && filters.date.trim() !== "") {
-        const targetDate = filters.date.trim();
+      if (
+        typeof filters.date === "string" &&
+        filters.date.trim() !== "" &&
+        filters.date.trim() !== "all"
+      ) {
+        const timeframe = filters.date.trim();
+        const today = new Date();
 
         filtered = filtered.filter((event) => {
-          const eventDate = new Date(event.startDatetime)
-            .toISOString()
-            .slice(0, 10);
-          return eventDate === targetDate;
+          const eventDate = new Date(event.startDatetime);
+
+          if (timeframe === "week") {
+            const endOfWeek = new Date(today);
+            endOfWeek.setDate(today.getDate() + 7);
+            return eventDate >= today && eventDate <= endOfWeek;
+          }
+
+          if (timeframe === "weekend") {
+            const day = eventDate.getDay();
+            return day === 0 || day === 6;
+          }
+
+          return true;
         });
       }
 

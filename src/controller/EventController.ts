@@ -29,7 +29,10 @@ export interface IEventController {
   getAllEvents(
     res: Response,
     session: IAppBrowserSession,
-    filters: { category?: string; date?: string }
+    filters: {
+      category?: string | ParsedQs | (string | ParsedQs)[];
+      date?: string | ParsedQs | (string | ParsedQs)[];
+    }
   ): Promise<void>;
 
   searchEvents(
@@ -76,7 +79,9 @@ class EventController implements IEventController {
       error.name === "EventEditTimeRequiredError" ||
       error.name === "EventEditStartTimeInPastError" ||
       error.name === "EventEditEndBeforeStartError" ||
-      error.name === "EventSearchInvalidInputError"
+      error.name === "EventSearchInvalidInputError" ||
+      error.name === "EventFilterInvalidCategoryError" ||
+      error.name === "EventFilterInvalidDateError"
     ) {
       return 400;
     }
@@ -177,19 +182,31 @@ class EventController implements IEventController {
   async getAllEvents(
     res: Response,
     session: IAppBrowserSession,
-    filters: { category?: string; date?: string }
+    filters: {
+      category?: string | ParsedQs | (string | ParsedQs)[];
+      date?: string | ParsedQs | (string | ParsedQs)[];
+    }
   ): Promise<void> {
+    const categoryValue =
+      typeof filters.category === "string" ? filters.category : "";
+
+    const dateValue =
+      typeof filters.date === "string" ? filters.date : "";
+
     const hasFilters =
-      (filters.category && filters.category.trim() !== "") ||
-      (filters.date && filters.date.trim() !== "");
+      categoryValue.trim() !== "" || dateValue.trim() !== "";
 
     const result = hasFilters
       ? await this.service.getFilteredPublishedEvents(filters)
       : await this.service.getAllEvents();
 
     if (!result.ok) {
-      res.status(500).render("partials/error", {
-        message: "Failed to load",
+      const error = result.value as EventError;
+      const status = this.mapErrorStatus(error);
+
+      res.status(status).render("partials/error", {
+        message: error.message,
+        name: error.name,
         layout: false,
       });
       return;
@@ -218,10 +235,10 @@ class EventController implements IEventController {
     res.render("home", {
       session,
       pageError: null,
-      events: visibleEvents,
+      events: result.value,
       filters: {
-        category: filters.category ?? "",
-        date: filters.date ?? "",
+        category: categoryValue,
+        date: dateValue,
       },
       searchQuery: "",
     });

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { EventService } from "../event/EventService";
 import { EventError } from "../event/EventService";
+import type { OrganizerDashboardEvent } from "../event/EventService";
 import {
   getAuthenticatedUser,
   AppSessionStore,
@@ -9,6 +10,14 @@ import {
 
 export class OrganizerController {
   constructor(private readonly eventService: EventService) {}
+
+  private groupEvents(events: OrganizerDashboardEvent[]) {
+    return {
+      published: events.filter((event) => event.statusGroup === "published"),
+      draft: events.filter((event) => event.statusGroup === "draft"),
+      cancelledOrPast: events.filter((event) => event.statusGroup === "cancelledOrPast"),
+    };
+  }
 
   getDashboard = async (req: Request, res: Response): Promise<void> => {
     const store = req.session as AppSessionStore;
@@ -20,7 +29,10 @@ export class OrganizerController {
       return;
     }
 
-    const result = await this.eventService.getEventsForOrganizer(user.userId);
+    const result = await this.eventService.getEventsForOrganizer({
+      actingUserId: user.userId,
+      actingUserRole: user.role,
+    });
 
     if (!result.ok) {
       const error = result.value as EventError;
@@ -30,6 +42,14 @@ export class OrganizerController {
             .status(404)
             .render("partials/error", {
               message: "Organizer not found",
+              layout: false,
+            });
+          return;
+        case "UNAUTHORIZED":
+          res
+            .status(403)
+            .render("partials/error", {
+              message: "Only staff and admins can access organizer dashboard.",
               layout: false,
             });
           return;
@@ -44,16 +64,22 @@ export class OrganizerController {
       }
     }
 
-    const events = result.value;
+    const groupedEvents = this.groupEvents(result.value);
     const isHtmx = req.headers["hx-request"] === "true";
 
     if (isHtmx) {
       res.render("organizer/partials/event-list", {
-        events,
+        groupedEvents,
         session: browserSession,
+        actingUserRole: user.role,
+        layout: false,
       });
     } else {
-      res.render("organizer/dashboard", { events, session: browserSession });
+      res.render("organizer/dashboard", {
+        groupedEvents,
+        session: browserSession,
+        actingUserRole: user.role,
+      });
     }
   };
 }

@@ -1,15 +1,20 @@
 import { Router } from "express";
 import { OrganizerController } from "./OrganizerController";
 import { EventService } from "../event/EventService";
-import { InMemoryEventRepository } from "../event/InMemoryEventRepository";
+import type { IEventRepository } from "../repository/EventRepository";
+import type { IRsvpRepository } from "../repository/RsvpRepository";
 
-const eventRepository = new InMemoryEventRepository();
-const eventService = new EventService(eventRepository);
-const organizerController = new OrganizerController(eventService);
+export function createOrganizerRouter(
+  eventRepository: IEventRepository,
+  rsvpRepository: IRsvpRepository,
+) {
+  const eventService = new EventService(eventRepository, rsvpRepository);
+  const organizerController = new OrganizerController(eventService);
 
-const router = Router();
+  const router = Router();
 
-// GET /organizer/dashboard — full page or HTMX partial
-router.get("/dashboard", organizerController.getDashboard);
+  // GET /organizer/dashboard — full page or HTMX partial
+  router.get("/dashboard", organizerController.getDashboard);
 
-export { router as organizerRouter, eventRepository };
+  return router;
+}

@@ -84,7 +84,7 @@ function buildApp(
       return;
     }
 
-    await eventController.publishEvent(res, {
+    await eventController.publishEvent(req, res, {
       eventId: req.params.id,
       actingUserId: session.authenticatedUser.userId,
       actingUserRole: session.authenticatedUser.role,
@@ -103,7 +103,7 @@ function buildApp(
       return;
     }
 
-    await eventController.cancelEvent(res, {
+    await eventController.cancelEvent(req, res, {
       eventId: req.params.id,
       actingUserId: session.authenticatedUser.userId,
       actingUserRole: session.authenticatedUser.role,
@@ -160,10 +160,10 @@ describe("GET /events/:id", () => {
 
   it("returns 200 when organizer views their own draft", async () => {
     const app = buildApp({
-      userId: "user-staff",
-      email: "staff@app.test",
-      displayName: "Sam Staff",
-      role: "staff",
+      userId: "user-admin",
+      email: "admin@app.test",
+      displayName: "Avery Admin",
+      role: "admin",
     });
 
     const res = await request(app).get("/events/event-1");
@@ -201,10 +201,10 @@ describe("GET /events/:id", () => {
 describe("POST /events/:id/publish", () => {
   it("publishes a draft event inline for the organizer", async () => {
     const app = buildApp({
-      userId: "user-staff",
-      email: "staff@app.test",
-      displayName: "Sam Staff",
-      role: "staff",
+      userId: "user-admin",
+      email: "admin@app.test",
+      displayName: "Avery Admin",
+      role: "admin",
     });
 
     const res = await request(app)
@@ -308,10 +308,10 @@ describe("POST /events/:id/cancel", () => {
 
   it("returns 400 for invalid cancel transition", async () => {
     const app = buildApp({
-      userId: "user-staff",
-      email: "staff@app.test",
-      displayName: "Sam Staff",
-      role: "staff",
+      userId: "user-admin",
+      email: "admin@app.test",
+      displayName: "Avery Admin",
+      role: "admin",
     });
 
     const res = await request(app)

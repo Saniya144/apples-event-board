@@ -1,9 +1,22 @@
 <%- contentFor('body') %>
 
 <div class="max-w-4xl mx-auto px-4 py-8">
-  <h1 class="text-2xl font-bold mb-6">Organizer Dashboard</h1>
+  <h1 class="text-2xl font-bold mb-2">Organizer Dashboard</h1>
+  <p class="text-sm text-gray-500 mb-6">
+    <% if (actingUserRole === "admin") { %>
+      Viewing all organizer events across the platform.
+    <% } else { %>
+      Viewing events created by your account.
+    <% } %>
+  </p>
 
-  <div id="event-list">
-    <%- include('partials/event-list', { events }) %>
+  <div
+    id="event-list"
+    hx-get="/organizer/dashboard"
+    hx-trigger="organizer-dashboard-refresh from:body"
+    hx-target="this"
+    hx-swap="innerHTML"
+  >
+    <%- include('partials/event-list', { groupedEvents, actingUserRole }) %>
   </div>
 </div>

@@ -10,6 +10,7 @@ import { CreateInMemoryEventRepository } from "./repository/InMemoryEventReposit
 import { CreateInMemoryRsvpRepository } from "./repository/InMemoryRsvpRepository";
 import { CreateEventController } from "./controller/EventController";
 import { CreateRsvpController } from "./controller/RsvpController";
+import { createOrganizerRouter } from "./organizer/organizer.routes";
 
 import { EventService } from "./service/EventService";
 import { CreateRsvpService } from "./service/RsvpService";
@@ -39,7 +40,10 @@ export function createComposedApp(logger?: ILoggingService): IApp {
   const eventController = CreateEventController(eventService, rsvpService);
   const rsvpController = CreateRsvpController(rsvpService, resolvedLogger);
 
+  // Organizer wiring - pass the shared event repository
+  const organizerRouter = createOrganizerRouter(eventRepository, rsvpRepository);
+
   // CreateApp only expects authController and logger
   // The other controllers need to be registered another way (likely in app.ts routes)
-  return CreateApp(authController, eventController, rsvpController,resolvedLogger);
+  return CreateApp(authController, eventController, rsvpController, organizerRouter, resolvedLogger);
 }

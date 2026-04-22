@@ -1,4 +1,4 @@
-import type { Response } from "express";
+import type { Request, Response } from "express";
 import type { UserRole } from "../auth/User";
 import type { IAppBrowserSession } from "../session/AppSession";
 import { type EventError } from "../events/errors";
@@ -53,9 +53,9 @@ export interface IEventController {
     session: IAppBrowserSession
   ): Promise<void>;
 
-  publishEvent(res: Response, input: LifecycleEventInput): Promise<void>;
+  publishEvent(req: Request, res: Response, input: LifecycleEventInput): Promise<void>;
 
-  cancelEvent(res: Response, input: LifecycleEventInput): Promise<void>;
+  cancelEvent(req: Request, res: Response, input: LifecycleEventInput): Promise<void>;
 }
 
 class EventController implements IEventController {
@@ -112,6 +112,45 @@ class EventController implements IEventController {
     }
   
     return 500;
+  }
+
+  private isOrganizerDashboardRowRequest(req: Request): boolean {
+    const hxRequest = req.headers["hx-request"] === "true";
+    const hxTargetHeader = req.headers["hx-target"];
+    const hxTarget = Array.isArray(hxTargetHeader)
+      ? hxTargetHeader[0]
+      : typeof hxTargetHeader === "string"
+        ? hxTargetHeader
+        : "";
+    return hxRequest && hxTarget.startsWith("organizer-event-");
+  }
+
+  private organizerSectionIdForStatus(status: string, endDatetime: string): string {
+    if (status === "draft") {
+      return "draft-events";
+    }
+
+    if (status === "published" && new Date(endDatetime) > new Date()) {
+      return "published-events";
+    }
+
+    return "cancelled-or-past-events";
+  }
+
+  private organizerEmptyStateId(sectionId: string): string | null {
+    if (sectionId === "published-events") {
+      return "published-empty-state";
+    }
+
+    if (sectionId === "draft-events") {
+      return "draft-empty-state";
+    }
+
+    if (sectionId === "cancelled-or-past-events") {
+      return "cancelled-or-past-empty-state";
+    }
+
+    return null;
   }
   async createEventFromForm(
     res: Response,
@@ -347,7 +386,7 @@ class EventController implements IEventController {
     res.redirect("/home");
   }
 
-  async publishEvent(res: Response, input: LifecycleEventInput): Promise<void> {
+  async publishEvent(req: Request, res: Response, input: LifecycleEventInput): Promise<void> {
     const result = await this.service.publishEvent({
       eventId: input.eventId,
       actingUserId: input.actingUserId,
@@ -365,13 +404,29 @@ class EventController implements IEventController {
       return;
     }
 
+    if (this.isOrganizerDashboardRowRequest(req)) {
+      const sectionId = this.organizerSectionIdForStatus(
+        result.value.status,
+        result.value.endDatetime
+      );
+
+      res.status(200).render("organizer/partials/event-row", {
+        event: result.value,
+        actingUserRole: input.actingUserRole,
+        oobTarget: sectionId,
+        oobDeleteEmptyStateId: this.organizerEmptyStateId(sectionId),
+        layout: false,
+      });
+      return;
+    }
+
     res.status(200).render("partials/lifecycle-controls", {
       event: result.value,
       layout: false,
     });
   }
 
-  async cancelEvent(res: Response, input: LifecycleEventInput): Promise<void> {
+  async cancelEvent(req: Request, res: Response, input: LifecycleEventInput): Promise<void> {
     const result = await this.service.cancelEvent({
       eventId: input.eventId,
       actingUserId: input.actingUserId,
@@ -384,6 +439,22 @@ class EventController implements IEventController {
 
       res.status(status).render("partials/error", {
         message: error.message,
+        layout: false,
+      });
+      return;
+    }
+
+    if (this.isOrganizerDashboardRowRequest(req)) {
+      const sectionId = this.organizerSectionIdForStatus(
+        result.value.status,
+        result.value.endDatetime
+      );
+
+      res.status(200).render("organizer/partials/event-row", {
+        event: result.value,
+        actingUserRole: input.actingUserRole,
+        oobTarget: sectionId,
+        oobDeleteEmptyStateId: this.organizerEmptyStateId(sectionId),
         layout: false,
       });
       return;

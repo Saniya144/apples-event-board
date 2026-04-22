@@ -6,22 +6,36 @@
 
 <h2>All Events</h2>
 
-<form action="/home" method="GET">
+<form
+  id="event-filter-form"
+  action="/home"
+  method="GET"
+  hx-get="/home"
+  hx-target="#event-list"
+  hx-swap="innerHTML"
+  hx-push-url="true"
+>
   <label for="category">Category:</label>
   <input
     type="text"
     id="category"
     name="category"
     value="<%= filters?.category || '' %>"
+    hx-trigger="keyup changed delay:300ms"
+    hx-include="#event-filter-form"
   />
 
-  <label for="date">Date:</label>
-  <input
-    type="date"
+  <label for="date">Timeframe:</label>
+  <select
     id="date"
     name="date"
-    value="<%= filters?.date || '' %>"
-  />
+    hx-trigger="change"
+    hx-include="#event-filter-form"
+  >
+    <option value="" <%= !filters?.date ? "selected" : "" %>>All upcoming</option>
+    <option value="week" <%= filters?.date === "week" ? "selected" : "" %>>This week</option>
+    <option value="weekend" <%= filters?.date === "weekend" ? "selected" : "" %>>This weekend</option>
+  </select>
 
   <button type="submit">Filter</button>
 </form>

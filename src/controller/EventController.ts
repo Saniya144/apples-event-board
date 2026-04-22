@@ -232,10 +232,20 @@ class EventController implements IEventController {
       return false;
     });
 
+    const isHtmx = res.req.get("HX-Request") === "true";
+
+    if (isHtmx) {
+      res.render("partials/event-search-results", {
+        events: visibleEvents,
+        layout: false,
+      });
+      return;
+    }
+
     res.render("home", {
       session,
       pageError: null,
-      events: result.value,
+      events: visibleEvents,
       filters: {
         category: categoryValue,
         date: dateValue,

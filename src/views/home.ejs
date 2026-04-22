@@ -26,7 +26,7 @@
   <button type="submit">Filter</button>
 </form>
 
-<form action="/events/search" method="GET">
+<form id="event-search-form">
   <label for="q">Search:</label>
   <input
     type="text"
@@ -34,32 +34,18 @@
     name="q"
     placeholder="Search events"
     value="<%= searchQuery || '' %>"
+    hx-get="/events/search"
+    hx-target="#event-list"
+    hx-swap="innerHTML"
+    hx-trigger="keyup changed delay:300ms, search"
   />
-  <button type="submit">Search</button>
 </form>
 
 <hr />
 
-<% if (events && events.length > 0) { %>
-  <% events.forEach(event => { %>
-    <div>
-      <a href="/events/<%= event.id %>" class="font-bold text-blue-600 hover:underline">
-      <%= event.title %>
-    </a><br />
-      <span><%= event.location %></span><br />
-      <span><%= event.category %></span><br />
-      <span><strong>Start:</strong> <%= new Date(event.startDatetime).toLocaleString() %></span><br />
-      <span><%= event.description %></span><br />
-      <span>Created by: <%= event.organizerId %></span><br />
-      <a href="/events/<%= event.id %>/edit">Edit</a>
-      <hr />
-    </div>
-  <% }) %>
-<% } else { %>
-  <p>No matching events found.</p>
-<% } %>
-
-
+<div id="event-list">
+  <%- include("partials/event-search-results", { events }) %>
+</div>
 
 <section class="mb-5 p-6 border border-slate-200 rounded-2xl bg-gradient-to-b from-white to-slate-50 shadow-lg">
   <h1 class="text-3xl font-bold text-slate-900 mb-3">Welcome to Project Starter</h1>

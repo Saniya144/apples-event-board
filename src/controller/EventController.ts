@@ -230,7 +230,7 @@ class EventController implements IEventController {
   async searchEvents(
     res: Response,
     session: IAppBrowserSession,
-    query?: string | ParsedQs | (string | ParsedQs)[] | undefined
+    query?: string | ParsedQs | (string | ParsedQs)[]
   ): Promise<void> {
     const result = await this.service.searchPublishedUpcomingEvents(query);
 
@@ -246,11 +246,23 @@ class EventController implements IEventController {
       return;
     }
 
+    const searchQuery = typeof query === "string" ? query : "";
+    const isHtmx = res.req.get("HX-Request") === "true";
+
+    if (isHtmx) {
+      res.render("partials/event-search-results", {
+        events: result.value,
+        searchQuery,
+        layout: false,
+      });
+      return;
+    }
+
     res.render("home", {
       session,
       pageError: null,
       events: result.value,
-      searchQuery: typeof query === "string" ? query : "",
+      searchQuery,
       filters: {},
     });
   }

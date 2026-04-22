@@ -2,6 +2,9 @@ import request from "supertest";
 import express from "express";
 import path from "path";
 import Layouts from "express-ejs-layouts";
+import { CreateEventController } from "../../src/controller/EventController";
+import { EventService } from "../../src/service/EventService";
+import { CreateRsvpService } from "../../src/service/RsvpService";
 import { createOrganizerRouter } from "../../src/organizer/organizer.routes";
 import { InMemoryEventRepository } from "../../src/repository/InMemoryEventRepository";
 import { CreateInMemoryRsvpRepository } from "../../src/repository/InMemoryRsvpRepository";
@@ -37,10 +40,34 @@ function buildApp(userId: string, role: UserRole) {
 
   const eventRepository = new InMemoryEventRepository();
   const rsvpRepository = CreateInMemoryRsvpRepository();
+  const eventService = new EventService(eventRepository);
+  const eventController = CreateEventController(eventService, CreateRsvpService(rsvpRepository, eventRepository));
 
   app.use("/organizer", createOrganizerRouter(eventRepository, rsvpRepository));
 
-  return { app, rsvpRepository };
+  app.post("/events/:id/publish", async (req, res) => {
+    const session = (req as any).session.app;
+
+    await eventController.publishEvent(req, res, {
+      eventId: req.params.id,
+      actingUserId: session.authenticatedUser.userId,
+      actingUserRole: session.authenticatedUser.role,
+      session,
+    });
+  });
+
+  app.post("/events/:id/cancel", async (req, res) => {
+    const session = (req as any).session.app;
+
+    await eventController.cancelEvent(req, res, {
+      eventId: req.params.id,
+      actingUserId: session.authenticatedUser.userId,
+      actingUserRole: session.authenticatedUser.role,
+      session,
+    });
+  });
+
+  return { app, rsvpRepository, eventRepository };
 }
 
 describe("GET /organizer/dashboard", () => {
@@ -108,5 +135,48 @@ describe("GET /organizer/dashboard", () => {
     expect(res.text).toContain('hx-post="/events/event-1/publish"');
     expect(res.text).toContain('hx-post="/events/event-2/cancel"');
     expect(res.text).toContain("organizer-dashboard-refresh");
+  });
+
+  it("moves a draft event into the published section via HTMX", async () => {
+    const { app, eventRepository } = buildApp("user-admin", "admin");
+
+    await eventRepository.create({
+      id: "future-draft-event",
+      title: "Future Draft Event",
+      description: "Draft event for publish testing",
+      location: "Campus Center",
+      category: "Social",
+      status: "draft",
+      capacity: 20,
+      startDatetime: "2026-05-10T18:00:00.000Z",
+      endDatetime: "2026-05-10T20:00:00.000Z",
+      organizerId: "user-admin",
+      createdAt: "2026-05-01T12:00:00.000Z",
+      updatedAt: "2026-05-01T12:00:00.000Z",
+    });
+
+    const res = await request(app)
+      .post("/events/future-draft-event/publish")
+      .set("HX-Request", "true")
+      .set("HX-Target", "organizer-event-future-draft-event");
+
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('hx-swap-oob="beforeend:#published-events"');
+    expect(res.text).toContain('id="organizer-event-future-draft-event"');
+    expect(res.text).toContain('hx-swap-oob="delete"');
+  });
+
+  it("moves a published event into the cancelled-or-past section via HTMX", async () => {
+    const { app } = buildApp("user-admin", "admin");
+
+    const res = await request(app)
+      .post("/events/event-2/cancel")
+      .set("HX-Request", "true")
+      .set("HX-Target", "organizer-event-event-2");
+
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('hx-swap-oob="beforeend:#cancelled-or-past-events"');
+    expect(res.text).toContain('id="organizer-event-event-2"');
+    expect(res.text).toContain('hx-swap-oob="delete"');
   });
 });

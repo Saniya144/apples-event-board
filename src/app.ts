@@ -426,7 +426,7 @@ class ExpressApp implements IApp {
 
         const session = touchAppSession(sessionStore(req));
 
-        await this.eventController.publishEvent(res, {
+        await this.eventController.publishEvent(req, res, {
           eventId: typeof req.params.id === "string" ? req.params.id : "",
           actingUserId: currentUser.userId,
           actingUserRole: currentUser.role,
@@ -453,7 +453,7 @@ class ExpressApp implements IApp {
 
         const session = touchAppSession(sessionStore(req));
 
-        await this.eventController.cancelEvent(res, {
+        await this.eventController.cancelEvent(req, res, {
           eventId: typeof req.params.id === "string" ? req.params.id : "",
           actingUserId: currentUser.userId,
           actingUserRole: currentUser.role,

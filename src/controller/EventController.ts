@@ -130,12 +130,12 @@ class EventController implements IEventController {
     return hxRequest && hxTarget.startsWith("organizer-event-");
   }
 
-  private organizerSectionIdForStatus(status: string, endDatetime: string): string {
+  private organizerSectionIdForStatus(status: string, _endDatetime: string): string {
     if (status === "draft") {
       return "draft-events";
     }
 
-    if (status === "published" && new Date(endDatetime) > new Date()) {
+    if (status === "published") {
       return "published-events";
     }
 
@@ -157,6 +157,7 @@ class EventController implements IEventController {
 
     return null;
   }
+  
   async createEventFromForm(
     res: Response,
     input: any,
@@ -232,10 +233,20 @@ class EventController implements IEventController {
       return false;
     });
 
+    const isHtmx = res.req.get("HX-Request") === "true";
+
+    if (isHtmx) {
+      res.render("partials/event-search-results", {
+        events: visibleEvents,
+        layout: false,
+      });
+      return;
+    }
+
     res.render("home", {
       session,
       pageError: null,
-      events: result.value,
+      events: visibleEvents,
       filters: {
         category: categoryValue,
         date: dateValue,

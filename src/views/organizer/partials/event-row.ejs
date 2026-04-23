@@ -1,8 +1,7 @@
 <%
   const start = new Date(event.startDatetime);
   const end = new Date(event.endDatetime);
-  const isPast = end < new Date();
-  const statusLabel = isPast && event.status !== "cancelled" ? "past" : event.status;
+  const statusLabel = event.status;
   const oobAttrs = typeof oobTarget === "string" && oobTarget
     ? ` hx-swap-oob="beforeend:#${oobTarget}"`
     : "";

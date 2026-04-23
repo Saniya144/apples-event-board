@@ -142,14 +142,8 @@ export class EventService {
       }
 
       const events = await this.repo.getAll();
-      const now = new Date();
 
-      let filtered = events.filter((event) => {
-        return (
-          event.status === "published" &&
-          new Date(event.startDatetime) >= now
-        );
-      });
+      let filtered = events.filter((event) => event.status === "published");
 
       if (typeof filters.category === "string" && filters.category.trim() !== "") {
         const category = filters.category.trim().toLowerCase();
@@ -199,14 +193,8 @@ export class EventService {
       }
 
       const events = await this.repo.getAll();
-      const now = new Date();
 
-      let filtered = events.filter((event) => {
-        return (
-          event.status === "published" &&
-          new Date(event.startDatetime) >= now
-        );
-      });
+      let filtered = events.filter((event) => event.status === "published");
 
       if (typeof query !== "string" || query.trim() === "") {
         return Ok(filtered);
@@ -259,10 +247,6 @@ export class EventService {
       return Err(EventStateError("Cannot edit a cancelled event."));
     }
 
-    if (new Date(event.endDatetime) < new Date()) {
-      return Err(EventPastEditError());
-    }
-
     if (!input.title || input.title.trim() === "") {
       return Err(EventEditTitleRequiredError());
     }
@@ -271,18 +255,22 @@ export class EventService {
       return Err(EventEditLocationRequiredError());
     }
 
-    const begin = new Date(input.startTime);
-    const end = new Date(input.endTime);
+    const startRaw = input.startTime ?? input.startDatetime;
+    const endRaw = input.endTime ?? input.endDatetime;
+
+    const begin = new Date(startRaw);
+    const end = new Date(endRaw);
 
     if (Number.isNaN(begin.getTime()) || Number.isNaN(end.getTime())) {
       return Err(EventEditTimeRequiredError());
     }
 
-    if(begin<new Date()) return Err(EventEditStartTimeInPastError());
-
     if (end < begin) {
       return Err(EventEditEndBeforeStartError());
-  
+    }
+
+    if (begin < new Date() && event.status !== "published") {
+      return Err(EventEditStartTimeInPastError());
     }
 
     const updatedEvent: IEvent = {
@@ -305,6 +293,7 @@ export class EventService {
 
     return await this.repo.update(updatedEvent);
   }
+
   async getEventDetail(
     input: GetEventDetailInput
   ): Promise<Result<IEventDetailView, EventError>> {
@@ -362,8 +351,8 @@ export class EventService {
       organizerName,
       attendeeCount,
       canEdit: isOwner || isAdmin,
-      canCancel: isOwner || isAdmin,
-      canPublish: isOwner && event.status === "draft",
+      canCancel: (isOwner || isAdmin) && event.status !== "cancelled",
+      canPublish: (isOwner || isAdmin) && event.status === "draft",
       canRsvp: event.status === "published",
     });
   }

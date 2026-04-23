@@ -1,28 +1,22 @@
-import { PrismaClient } from "@prisma/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-import { PrismaEventRepository } from "../../src/repository/PrismaEventRepository";
+import { createPrismaEventRepository, connectPrisma, disconnectPrisma, clearEvents, prisma } from "../prismaRouteTestHelper";
 import { EventService } from "../../src/service/EventService";
-
-const prisma = new PrismaClient({
-  adapter: new PrismaBetterSqlite3({ url: "file:./prisma/dev.db" }),
-});
 
 describe("PrismaEventRepository visibility", () => {
   let service: EventService;
 
   beforeAll(async () => {
-    await prisma.$connect();
-    const repository = new PrismaEventRepository(prisma);
+    await connectPrisma();
+    const repository = createPrismaEventRepository();
     service = new EventService(repository);
   });
 
   afterAll(async () => {
-    await prisma.event.deleteMany({});
-    await prisma.$disconnect();
+    await clearEvents();
+    await disconnectPrisma();
   });
 
   beforeEach(async () => {
-    await prisma.event.deleteMany({});
+    await clearEvents();
   });
 
   it("returns only published events for the public event listing", async () => {

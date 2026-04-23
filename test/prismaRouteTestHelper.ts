@@ -6,6 +6,8 @@ const prisma = new PrismaClient({
   adapter: new PrismaBetterSqlite3({ url: "file:./prisma/dev.db" }),
 });
 
+export { prisma };
+
 export function createPrismaEventRepository(): PrismaEventRepository {
   return new PrismaEventRepository(prisma);
 }

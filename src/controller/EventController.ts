@@ -130,12 +130,12 @@ class EventController implements IEventController {
     return hxRequest && hxTarget.startsWith("organizer-event-");
   }
 
-  private organizerSectionIdForStatus(status: string, endDatetime: string): string {
+  private organizerSectionIdForStatus(status: string, _endDatetime: string): string {
     if (status === "draft") {
       return "draft-events";
     }
 
-    if (status === "published" && new Date(endDatetime) > new Date()) {
+    if (status === "published") {
       return "published-events";
     }
 
@@ -157,6 +157,7 @@ class EventController implements IEventController {
 
     return null;
   }
+  
   async createEventFromForm(
     res: Response,
     input: any,

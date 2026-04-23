@@ -45,14 +45,11 @@ export class EventService {
           ? allEvents
           : allEvents.filter((event) => event.organizerId === input.actingUserId);
 
-      const now = new Date();
-
       const eventsWithStats = await Promise.all(
         visibleEvents.map(async (event) => {
           const attendeeCount = await this.rsvpRepository.countGoingByEvent(event.id);
-          const isPast = new Date(event.endDatetime) < now;
           const statusGroup: OrganizerDashboardEvent["statusGroup"] =
-            event.status === "cancelled" || isPast
+            event.status === "cancelled"
               ? "cancelledOrPast"
               : event.status === "draft"
                 ? "draft"
@@ -66,7 +63,7 @@ export class EventService {
             attendeeCount,
             statusGroup,
             canPublish: canManage && event.status === "draft",
-            canCancel: canManage && event.status === "published" && !isPast,
+            canCancel: canManage && event.status === "published",
           } as OrganizerDashboardEvent;
         }),
       );

@@ -6,7 +6,9 @@ import { CreatePasswordHasher } from "./auth/PasswordHasher";
 import { CreateApp } from "./app";
 import type { IApp } from "./contracts";
 
-import { CreateInMemoryEventRepository } from "./repository/InMemoryEventRepository";
+import { PrismaClient } from "@prisma/client";
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { CreatePrismaEventRepository } from "./repository/PrismaEventRepository";
 import { CreateInMemoryRsvpRepository } from "./repository/InMemoryRsvpRepository";
 import { CreateEventController } from "./controller/EventController";
 import { CreateRsvpController } from "./controller/RsvpController";
@@ -29,7 +31,10 @@ export function createComposedApp(logger?: ILoggingService): IApp {
   const authController = CreateAuthController(authService, adminUserService, resolvedLogger);
 
   // Event wiring (created but not passed to CreateApp)
-  const eventRepository = CreateInMemoryEventRepository();
+  const prisma = new PrismaClient({
+    adapter: new PrismaBetterSqlite3({ url: "file:./prisma/dev.db" }),
+  });
+  const eventRepository = CreatePrismaEventRepository(prisma);
   const eventService = new EventService(eventRepository);
   
 

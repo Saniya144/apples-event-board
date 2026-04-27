@@ -5,8 +5,10 @@ import Layouts from "express-ejs-layouts";
 import { CreateEventController } from "../../src/controller/EventController";
 import { EventService } from "../../src/service/EventService";
 import { CreateRsvpService } from "../../src/service/RsvpService";
-import { CreateInMemoryEventRepository } from "../../src/repository/InMemoryEventRepository";
+import { createPrismaEventRepository, setupPrismaRouteTests } from "../prismaRouteTestHelper";
 import { CreateInMemoryRsvpRepository } from "../../src/repository/InMemoryRsvpRepository";
+
+setupPrismaRouteTests();
 
 function buildApp(user: any | null) {
   const app = express();
@@ -27,7 +29,7 @@ function buildApp(user: any | null) {
   app.set("views", path.join(process.cwd(), "src/views"));
   app.set("layout", "layouts/base");
 
-  const eventRepo = CreateInMemoryEventRepository();
+  const eventRepo = createPrismaEventRepository();
   const rsvpRepo = CreateInMemoryRsvpRepository();
   const rsvpService = CreateRsvpService(rsvpRepo, eventRepo);
   const eventService = new EventService(eventRepo);

@@ -6,9 +6,11 @@ import { CreateEventController } from "../../src/controller/EventController";
 import { EventService } from "../../src/service/EventService";
 import { CreateRsvpService } from "../../src/service/RsvpService";
 import { createOrganizerRouter } from "../../src/organizer/organizer.routes";
-import { InMemoryEventRepository } from "../../src/repository/InMemoryEventRepository";
+import { createPrismaEventRepository, setupPrismaRouteTests } from "../prismaRouteTestHelper";
 import { CreateInMemoryRsvpRepository } from "../../src/repository/InMemoryRsvpRepository";
 import type { UserRole } from "../../src/auth/User";
+
+setupPrismaRouteTests();
 
 function buildApp(userId: string, role: UserRole) {
   const app = express();
@@ -38,7 +40,7 @@ function buildApp(userId: string, role: UserRole) {
   app.set("views", path.join(process.cwd(), "src/views"));
   app.set("layout", "layouts/base");
 
-  const eventRepository = new InMemoryEventRepository();
+  const eventRepository = createPrismaEventRepository();
   const rsvpRepository = CreateInMemoryRsvpRepository();
   const eventService = new EventService(eventRepository);
   const eventController = CreateEventController(eventService, CreateRsvpService(rsvpRepository, eventRepository));

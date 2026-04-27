@@ -14,11 +14,11 @@ function makeEvent(overrides: Partial<IEvent> = {}): IEvent {
     category: "Social",
     status: "published",
     capacity: 20,
-    startDatetime: "2026-04-16T18:00:00.000Z",
-    endDatetime: "2026-04-16T20:00:00.000Z",
+    startDatetime: "2026-12-16T18:00:00.000Z",
+    endDatetime: "2026-12-16T20:00:00.000Z",
     organizerId: "user-staff",
-    createdAt: "2026-04-13T10:00:00.000Z",
-    updatedAt: "2026-04-13T10:00:00.000Z",
+    createdAt: "2026-12-13T10:00:00.000Z",
+    updatedAt: "2026-12-13T10:00:00.000Z",
     ...overrides,
   };
 }
@@ -393,8 +393,8 @@ describe("EventService.cancelEvent", () => {
         {
           title: "",
           location: "Worcester DC",
-          startTime: "2026-04-24T11:00",
-          endTime: "2026-04-25T11:00",
+          startTime: "2026-12-24T11:00",
+          endTime: "2026-12-25T11:00",
         },
         user
       );
@@ -410,8 +410,8 @@ describe("EventService.cancelEvent", () => {
         {
           title: "",
           location: "hey",
-          startTime: "2026-04-24T11:00",
-          endTime: "2026-04-25T11:00",
+          startTime: "2026-12-24T11:00",
+          endTime: "2026-12-25T11:00",
         },
         user
       );
@@ -426,8 +426,8 @@ describe("EventService.cancelEvent", () => {
         {
           title: "sports watch patry",
           location: "",
-          startTime: "2026-04-24T11:00",
-          endTime: "2026-04-25T11:00",
+          startTime: "2026-12-24T11:00",
+          endTime: "2026-12-25T11:00",
         },
         user
       );
@@ -445,7 +445,7 @@ describe("EventService.cancelEvent", () => {
           title: "Study Night",
           location: "Campus Center",
           startTime: "2020-01-01T10:00",
-          endTime: "2026-04-25T11:00",
+          endTime: "2026-12-25T11:00",
         },
         user
       );
@@ -483,8 +483,8 @@ describe("EventService.cancelEvent", () => {
           title: "Study Night",
           location: "stu",
           category: "academic",
-          startTime: "2026-04-25T10:00",
-          endTime: "2026-04-25T11:00",
+          startTime: "2026-12-25T10:00",
+          endTime: "2026-12-25T11:00",
           description: "Finals study",
           capacity: 25,
         },
@@ -597,8 +597,8 @@ describe("EventService.cancelEvent", () => {
         {
           title: "Original Event",
           location: "Campus Center",
-          startTime: "2026-04-25T10:00",
-          endTime: "2026-04-25T11:00",
+          startTime: "2026-12-25T10:00",
+          endTime: "2026-12-25T11:00",
         },
         owner
       );
@@ -611,8 +611,8 @@ describe("EventService.cancelEvent", () => {
         {
           title: "",
           location: "New ",
-          startTime: "2026-04-26T10:00",
-          endTime: "2026-04-26T11:00",
+          startTime: "2026-12-26T10:00",
+          endTime: "2026-12-26T11:00",
         },
         owner
       );
@@ -629,8 +629,8 @@ describe("EventService.cancelEvent", () => {
         {
           title: "Original Event",
           location: "Campus Center",
-          startTime: "2026-04-25T10:00",
-          endTime: "2026-04-25T11:00",
+          startTime: "2026-12-25T10:00",
+          endTime: "2026-12-25T11:00",
         },
         owner
       );
@@ -643,8 +643,8 @@ describe("EventService.cancelEvent", () => {
         {
           title: "Updated Event",
           location: "",
-          startTime: "2026-04-26T10:00",
-          endTime: "2026-04-26T11:00",
+          startTime: "2026-12-26T10:00",
+          endTime: "2026-12-26T11:00",
         },
         owner
       );
@@ -693,8 +693,8 @@ describe("EventService.cancelEvent", () => {
         {
           title: "Original Event",
           location: "Campus Center",
-          startTime: "2026-04-25T10:00",
-          endTime: "2026-04-25T11:00",
+          startTime: "2026-12-25T10:00",
+          endTime: "2026-12-25T11:00",
         },
         owner
       );
@@ -725,8 +725,8 @@ describe("EventService.cancelEvent", () => {
         {
           title: "Original Event",
           location: "Campus Center",
-          startTime: "2026-04-25T10:00",
-          endTime: "2026-04-25T11:00",
+          startTime: "2026-12-25T10:00",
+          endTime: "2026-12-25T11:00",
         },
         owner
       );
@@ -739,7 +739,7 @@ describe("EventService.cancelEvent", () => {
         {
           title: "Updated Event",
           location: "New Hall",
-          startTime: "2026-04-25T11:00",
+          startTime: "2026-12-25T11:00",
           endTime: "2025-04-26T10:00",
         },
         owner

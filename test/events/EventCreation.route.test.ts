@@ -66,8 +66,8 @@ describe("POST /events/new", () => {
     const response = await request(app).post("/events/new").send({
       title: "Study Session",
       location: "Campus",
-      startTime: "2026-04-25T10:00",
-      endTime: "2026-04-25T11:00",
+      startTime: "2026-12-25T10:00",
+      endTime: "2026-12-25T11:00",
     });
 
     expect(response.status).toBe(302);
@@ -80,8 +80,8 @@ describe("POST /events/new", () => {
     const response = await request(app).post("/events/new").send({
       title: "Study Night",
       location: "Campus Center",
-      startTime: "2026-04-25T11:00",
-      endTime: "2026-04-25T10:00",
+      startTime: "2026-12-25T11:00",
+      endTime: "2026-12-25T10:00",
     });
 
     expect(response.status).toBe(400);
@@ -95,8 +95,8 @@ describe("POST /events/new", () => {
     const response = await request(app).post("/events/new").send({
       title: "",
       location: "Campus Center",
-      startTime: "2026-04-25T10:00",
-      endTime: "2026-04-25T11:00",
+      startTime: "2026-12-25T10:00",
+      endTime: "2026-12-25T11:00",
     });
 
     expect(response.status).toBe(400);
@@ -110,8 +110,8 @@ describe("POST /events/new", () => {
     const response = await request(app).post("/events/new").send({
       title: "Study Night",
       location: "",
-      startTime: "2026-04-25T10:00",
-      endTime: "2026-04-25T11:00",
+      startTime: "2026-12-25T10:00",
+      endTime: "2026-12-25T11:00",
     });
 
     expect(response.status).toBe(400);
@@ -126,7 +126,7 @@ describe("POST /events/new", () => {
       title: "Study Night",
       location: "Campus Center",
       startTime: "2009-04-28T11:00",
-      endTime: "2026-04-25T10:00",
+      endTime: "2026-12-25T10:00",
     });
 
     expect(response.status).toBe(400);
@@ -140,8 +140,8 @@ describe("POST /events/new", () => {
     const response = await request(app).post("/events/new").send({
       title: "Study Night",
       location: "Campus Center",
-      startTime: "2026-04-25T10:00",
-      endTime: "2026-04-25T11:00",
+      startTime: "2026-12-25T10:00",
+      endTime: "2026-12-25T11:00",
     });
 
     expect(response.status).toBe(401);

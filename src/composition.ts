@@ -9,7 +9,7 @@ import type { IApp } from "./contracts";
 import { PrismaClient } from "@prisma/client";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { CreatePrismaEventRepository } from "./repository/PrismaEventRepository";
-import { CreateInMemoryRsvpRepository } from "./repository/InMemoryRsvpRepository";
+import { CreatePrismaRsvpRepository } from "./repository/PrismaRsvpRepository";
 import { CreateEventController } from "./controller/EventController";
 import { CreateRsvpController } from "./controller/RsvpController";
 import { createOrganizerRouter } from "./organizer/organizer.routes";
@@ -30,25 +30,24 @@ export function createComposedApp(logger?: ILoggingService): IApp {
   const adminUserService = CreateAdminUserService(authUsers, passwordHasher);
   const authController = CreateAuthController(authService, adminUserService, resolvedLogger);
 
-  // Event wiring (created but not passed to CreateApp)
+  // Prisma client
   const prisma = new PrismaClient({
-    adapter: new PrismaBetterSqlite3({ url: "file:./prisma/dev.db" }),
+    adapter: new PrismaBetterSqlite3({ url: process.env.DATABASE_URL ?? "file:./prisma/dev.db" }),
   });
+
+  // Event wiring (Prisma-backed)
   const eventRepository = CreatePrismaEventRepository(prisma);
   const eventService = new EventService(eventRepository);
-  
 
-  // RSVP wiring (created but not passed to CreateApp)
-  const rsvpRepository = CreateInMemoryRsvpRepository();
+  // RSVP wiring (Prisma-backed for Sprint 3)
+  const rsvpRepository = CreatePrismaRsvpRepository(prisma);
   const rsvpService = CreateRsvpService(rsvpRepository, eventRepository);
 
   const eventController = CreateEventController(eventService, rsvpService);
   const rsvpController = CreateRsvpController(rsvpService, resolvedLogger);
 
-  // Organizer wiring - pass the shared event repository
+  // Organizer wiring
   const organizerRouter = createOrganizerRouter(eventRepository, rsvpRepository);
 
-  // CreateApp only expects authController and logger
-  // The other controllers need to be registered another way (likely in app.ts routes)
   return CreateApp(authController, eventController, rsvpController, organizerRouter, resolvedLogger);
 }

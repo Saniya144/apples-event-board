@@ -19,4 +19,17 @@ model Event {
   organizerId   String
   createdAt     String
   updatedAt     String
+  rsvps         Rsvp[]
+}
+
+model Rsvp {
+  id        String @id @default(cuid())
+  eventId   String
+  userId    String
+  status    String
+  createdAt String
+
+  event     Event  @relation(fields: [eventId], references: [id])
+
+  @@unique([eventId, userId])
 }

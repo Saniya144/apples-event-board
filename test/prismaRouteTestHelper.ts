@@ -21,6 +21,7 @@ export async function disconnectPrisma(): Promise<void> {
 }
 
 export async function clearEvents(): Promise<void> {
+  await prisma.rsvp.deleteMany();
   await prisma.event.deleteMany();
 }
 

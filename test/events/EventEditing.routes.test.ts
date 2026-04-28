@@ -78,8 +78,8 @@ describe("POST /events/:id/edit", () => {
     const response = await request(app).post("/events/event-2/edit").send({
       title: "Studying",
       location: "Woo",
-      startTime: "2026-04-22T19:00",
-      endTime: "2026-04-22T21:00",
+      startTime: "2026-12-22T19:00",
+      endTime: "2026-12-22T21:00",
       description: "Updated description",
     });
 
@@ -93,8 +93,8 @@ describe("POST /events/:id/edit", () => {
     const response = await request(app).post("/events/event-2/edit").send({
       title: "Study Night",
       location: "Campus Center",
-      startTime: "2026-04-22T21:00",
-      endTime: "2026-04-22T19:00",
+      startTime: "2026-12-22T21:00",
+      endTime: "2026-12-22T19:00",
     });
 
     expect(response.status).toBe(400);
@@ -108,8 +108,8 @@ describe("POST /events/:id/edit", () => {
     const response = await request(app).post("/events/event-2/edit").send({
       title: "",
       location: "Campus Center",
-      startTime: "2026-04-22T19:00",
-      endTime: "2026-04-22T21:00",
+      startTime: "2026-12-22T19:00",
+      endTime: "2026-12-22T21:00",
     });
 
     expect(response.status).toBe(400);
@@ -123,8 +123,8 @@ describe("POST /events/:id/edit", () => {
     const response = await request(app).post("/events/event-2/edit").send({
       title: "Study Night",
       location: "",
-      startTime: "2026-04-22T19:00",
-      endTime: "2026-04-22T21:00",
+      startTime: "2026-12-22T19:00",
+      endTime: "2026-12-22T21:00",
     });
 
     expect(response.status).toBe(400);
@@ -138,8 +138,8 @@ describe("POST /events/:id/edit", () => {
     const response = await request(app).post("/events/event-2/edit").send({
       title: "basketball",
       location: "rec",
-      startTime: "2026-04-22T19:00",
-      endTime: "2026-04-22T21:00",
+      startTime: "2026-12-22T19:00",
+      endTime: "2026-12-22T21:00",
     });
 
     expect(response.status).toBe(403);
@@ -153,8 +153,8 @@ describe("POST /events/:id/edit", () => {
     const response = await request(app).post("/events/event-2/edit").send({
       title: "club meeting",
       location: "LGRC",
-      startTime: "2026-04-22T19:00",
-      endTime: "2026-04-22T21:00",
+      startTime: "2026-12-22T19:00",
+      endTime: "2026-12-22T21:00",
     });
 
     expect(response.status).toBe(401);

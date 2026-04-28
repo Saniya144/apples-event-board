@@ -54,7 +54,7 @@
     </div>
   </div>
 
-    <div class="bg-white rounded-xl shadow p-6">
+  <div class="bg-white rounded-xl shadow p-6">
     <h2 class="text-lg font-semibold text-slate-900 mb-4">Actions</h2>
 
     <% if (waitlistPosition !== null && waitlistPosition !== undefined) { %>
@@ -75,6 +75,12 @@
       <% if (event.canCancel) { %>
         <button class="rounded-lg bg-red-600 text-white px-4 py-2 opacity-60 cursor-not-allowed" disabled>
           Cancel Event
+        </button>
+      <% } %>
+
+      <% if (event.status === 'draft' && event.canEdit) { %>
+        <button class="rounded-lg bg-green-600 text-white px-4 py-2 opacity-60 cursor-not-allowed" disabled>
+          Publish Event
         </button>
       <% } %>
 

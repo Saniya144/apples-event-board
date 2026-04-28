@@ -7,4 +7,8 @@ export interface IEventRepository {
   findById(id: string): Promise<Result<IEvent | null, EventError>>;
   update(event: IEvent): Promise<Result<IEvent, EventError>>;
   getAll(): Promise<IEvent[]>;
+  findFilteredPublishedUpcoming(filters: {
+    category?: string;
+    date?: "all" | "week" | "weekend";
+  }): Promise<IEvent[]>;
 }

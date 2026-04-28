@@ -81,6 +81,55 @@ export class PrismaEventRepository implements IEventRepository {
     }
   }
 
+  async findFilteredPublishedUpcoming(filters: {
+    category?: string;
+    date?: "all" | "week" | "weekend";
+  }): Promise<IEvent[]> {
+    const now = new Date();
+
+    const where: any = {
+      status: "published",
+    };
+
+    if (filters.category?.trim()) {
+      where.category = filters.category.trim();
+    }
+
+    if (filters.date === "week") {
+      const endOfWeek = new Date(now);
+      endOfWeek.setDate(now.getDate() + 7);
+      endOfWeek.setHours(23, 59, 59, 999);
+
+      where.startDatetime = {
+        gte: now.toISOString(),
+        lte: endOfWeek.toISOString(),
+      };
+    }
+
+    if (filters.date === "weekend") {
+      const saturday = new Date(now);
+      const daysUntilSaturday = (6 - now.getDay() + 7) % 7;
+      saturday.setDate(now.getDate() + daysUntilSaturday);
+      saturday.setHours(0, 0, 0, 0);
+
+      const sunday = new Date(saturday);
+      sunday.setDate(saturday.getDate() + 1);
+      sunday.setHours(23, 59, 59, 999);
+
+      where.startDatetime = {
+        gte: saturday.toISOString(),
+        lte: sunday.toISOString(),
+      };
+    }
+
+    return this.prisma.event.findMany({
+      where,
+      orderBy: {
+        startDatetime: "asc",
+      },
+    }) as Promise<IEvent[]>;
+  }
+
   async getAll(): Promise<IEvent[]> {
     const events = await this.prisma.event.findMany();
     return events as IEvent[];

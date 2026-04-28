@@ -141,42 +141,20 @@ export class EventService {
         return Err(EventFilterInvalidDateError());
       }
 
-      const events = await this.repo.getAll();
+      const category =
+        typeof filters.category === "string" && filters.category.trim() !== ""
+          ? filters.category.trim()
+          : undefined;
 
-      let filtered = events.filter((event) => event.status === "published");
+      const date =
+        typeof filters.date === "string" && filters.date.trim() !== ""
+          ? (filters.date.trim() as "all" | "week" | "weekend")
+          : undefined;
 
-      if (typeof filters.category === "string" && filters.category.trim() !== "") {
-        const category = filters.category.trim().toLowerCase();
-        filtered = filtered.filter(
-          (event) => event.category.toLowerCase() === category
-        );
-      }
-
-      if (
-        typeof filters.date === "string" &&
-        filters.date.trim() !== "" &&
-        filters.date.trim() !== "all"
-      ) {
-        const timeframe = filters.date.trim();
-        const today = new Date();
-
-        filtered = filtered.filter((event) => {
-          const eventDate = new Date(event.startDatetime);
-
-          if (timeframe === "week") {
-            const endOfWeek = new Date(today);
-            endOfWeek.setDate(today.getDate() + 7);
-            return eventDate >= today && eventDate <= endOfWeek;
-          }
-
-          if (timeframe === "weekend") {
-            const day = eventDate.getDay();
-            return day === 0 || day === 6;
-          }
-
-          return true;
-        });
-      }
+      const filtered = await this.repo.findFilteredPublishedUpcoming({
+        category,
+        date,
+      });
 
       return Ok(filtered);
     } catch {

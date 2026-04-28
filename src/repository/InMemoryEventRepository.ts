@@ -141,6 +141,54 @@ export class InMemoryEventRepository implements IEventRepository {
     }
   }
 
+  async findFilteredPublishedUpcoming(filters: {
+    category?: string;
+    date?: "all" | "week" | "weekend";
+  }): Promise<IEvent[]> {
+    const now = new Date();
+
+    return this.events
+      .filter((event) => event.status === "published")
+      .filter((event) => new Date(event.startDatetime) >= now)
+      .filter((event) => {
+        if (!filters.category?.trim()) return true;
+        return event.category === filters.category.trim();
+      })
+      .filter((event) => {
+        if (!filters.date || filters.date === "all") return true;
+
+        const eventDate = new Date(event.startDatetime);
+
+        if (filters.date === "week") {
+          const endOfWeek = new Date(now);
+          endOfWeek.setDate(now.getDate() + 7);
+          endOfWeek.setHours(23, 59, 59, 999);
+
+          return eventDate >= now && eventDate <= endOfWeek;
+        }
+
+        if (filters.date === "weekend") {
+          const saturday = new Date(now);
+          const daysUntilSaturday = (6 - now.getDay() + 7) % 7;
+          saturday.setDate(now.getDate() + daysUntilSaturday);
+          saturday.setHours(0, 0, 0, 0);
+
+          const sunday = new Date(saturday);
+          sunday.setDate(saturday.getDate() + 1);
+          sunday.setHours(23, 59, 59, 999);
+
+          return eventDate >= saturday && eventDate <= sunday;
+        }
+
+        return true;
+      })
+      .sort(
+        (a, b) =>
+          new Date(a.startDatetime).getTime() -
+          new Date(b.startDatetime).getTime()
+      );
+  }
+
   async getAll(): Promise<IEvent[]> {
     return this.events;
   }

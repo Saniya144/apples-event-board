@@ -13,6 +13,7 @@ import { CreatePrismaRsvpRepository } from "./repository/PrismaRsvpRepository";
 import { CreateEventController } from "./controller/EventController";
 import { CreateRsvpController } from "./controller/RsvpController";
 import { createOrganizerRouter } from "./organizer/organizer.routes";
+import { createRsvpRouter } from "./rsvp/rsvp.routes";
 
 import { EventService } from "./service/EventService";
 import { CreateRsvpService } from "./service/RsvpService";
@@ -49,5 +50,8 @@ export function createComposedApp(logger?: ILoggingService): IApp {
   // Organizer wiring
   const organizerRouter = createOrganizerRouter(eventRepository, rsvpRepository);
 
-  return CreateApp(authController, eventController, rsvpController, organizerRouter, resolvedLogger);
+  // RSVP Dashboard wiring (Prisma-backed for Feature 7, Sprint 3)
+  const rsvpRouter = createRsvpRouter(prisma);
+
+  return CreateApp(authController, eventController, rsvpController, organizerRouter, rsvpRouter, resolvedLogger);
 }

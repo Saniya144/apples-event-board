@@ -109,7 +109,7 @@ export class EventService {
     return await this.repo.create(event);
   }
 
-  async getAllEvents(): Promise<Result<IEvent[], EventError>> {
+  async getAllEvents(_currentUser?: any): Promise<Result<IEvent[], EventError>> {
     try {
       const events = await this.repo.getAll();
       return Ok(events);
@@ -121,7 +121,7 @@ export class EventService {
   async getFilteredPublishedEvents(filters: {
     category?: string | ParsedQs | (string | ParsedQs)[];
     date?: string | ParsedQs | (string | ParsedQs)[];
-  }): Promise<Result<IEvent[], EventError>> {
+  }, _currentUser?: any): Promise<Result<IEvent[], EventError>> {
     try {
       if (Array.isArray(filters.category) || typeof filters.category === "object") {
         return Err(EventFilterInvalidCategoryError());
@@ -163,7 +163,7 @@ export class EventService {
   }
 
   async searchPublishedUpcomingEvents(
-    query?: string | ParsedQs | (string | ParsedQs)[]
+    query?: string | ParsedQs | (string | ParsedQs)[], _currentUser?: any
   ): Promise<Result<IEvent[], EventError>> {
     try {
       if (Array.isArray(query) || typeof query === "object") {

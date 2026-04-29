@@ -11,4 +11,5 @@ export interface IEventRepository {
     category?: string;
     date?: "all" | "week" | "weekend";
   }): Promise<IEvent[]>;
+  searchPublishedUpcoming(query?: string): Promise<IEvent[]>;
 }

@@ -131,6 +131,29 @@ export class PrismaEventRepository implements IEventRepository {
     }) as Promise<IEvent[]>;
   }
 
+  async searchPublishedUpcoming(query?: string): Promise<IEvent[]> {
+    const q = query?.trim();
+
+    const where: any = {
+      status: "published",
+    };
+
+    if (q) {
+      where.OR = [
+        { title: { contains: q } },
+        { description: { contains: q } },
+        { location: { contains: q } },
+      ];
+    }
+
+    return this.prisma.event.findMany({
+      where,
+      orderBy: {
+        startDatetime: "asc",
+      },
+    }) as Promise<IEvent[]>;
+  }
+
   async getAll(): Promise<IEvent[]> {
     const events = await this.prisma.event.findMany();
     return events as IEvent[];

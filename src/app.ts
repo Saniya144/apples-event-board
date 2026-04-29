@@ -477,7 +477,7 @@ class ExpressApp implements IApp {
 
 
 
-    this.app.use("/rsvps", rsvpRouter);
+    this.app.use("/rsvps", this.rsvpRouter);
 
     // ── Error handler ────────────────────────────────────────────────
 

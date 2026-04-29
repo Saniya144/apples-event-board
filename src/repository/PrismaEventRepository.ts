@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import type { IEventRepository } from "./EventRepository";
+import type { IEventRepository, EventWithAttendeeCount } from "./EventRepository";
 import type { IEvent } from "../model/Event";
 import { Ok, Err, type Result } from "../lib/result";
 import {
@@ -156,6 +156,30 @@ export class PrismaEventRepository implements IEventRepository {
   async getAll(): Promise<IEvent[]> {
     const events = await this.prisma.event.findMany();
     return events as IEvent[];
+  }
+
+  async getAllWithAttendeeCount(filterByOrganizerId?: string): Promise<EventWithAttendeeCount[]> {
+    const where = filterByOrganizerId ? { organizerId: filterByOrganizerId } : {};
+
+    const events = await this.prisma.event.findMany({
+      where,
+    });
+
+    // Count going RSVPs for each event in a single aggregation
+    const attendeeCounts = await this.prisma.rsvp.groupBy({
+      by: ["eventId"],
+      where: { status: "going" },
+      _count: true,
+    });
+
+    // Create a map for quick lookup
+    const countMap = new Map(attendeeCounts.map((r) => [r.eventId, r._count]));
+
+    // Combine events with their attendee counts
+    return events.map((event) => ({
+      ...(event as IEvent),
+      attendeeCount: countMap.get(event.id) || 0,
+    }));
   }
 }
 

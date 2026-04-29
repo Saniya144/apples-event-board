@@ -43,6 +43,10 @@ class FakeEventRepository implements IEventRepository {
     this.storedEvent = event;
     return Ok(event);
   }
+  async findFilteredPublishedUpcoming() {
+    if (!this.storedEvent) return [];
+    return this.storedEvent.status === "published" ? [this.storedEvent] : [];
+  }
 
   async getAll() {
     return this.storedEvent ? [this.storedEvent] : [];

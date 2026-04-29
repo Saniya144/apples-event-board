@@ -1,4 +1,3 @@
-import { rsvpRouter } from "./rsvp/rsvp.routes";
 import path from "node:path";
 import express, { Request, RequestHandler, Response, Router } from "express";
 import session from "express-session";
@@ -43,6 +42,7 @@ class ExpressApp implements IApp {
     private readonly eventController: IEventController,
     private readonly rsvpController: IRsvpController,
     private readonly organizerRouter: Router,
+    private readonly rsvpRouter: Router,
     private readonly logger: ILoggingService,
   ) {
     this.app = express();
@@ -509,7 +509,8 @@ export function CreateApp(
   eventController: IEventController,
   rsvpController: IRsvpController,
   organizerRouter: Router,
+  rsvpRouter: Router,
   logger: ILoggingService,
 ): IApp {
-  return new ExpressApp(authController, eventController, rsvpController, organizerRouter, logger);
+  return new ExpressApp(authController, eventController, rsvpController, organizerRouter, rsvpRouter, logger);
 }

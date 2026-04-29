@@ -359,7 +359,6 @@ class EventController implements IEventController {
       actingUserId: input.actingUserId,
       actingUserRole: input.actingUserRole,
     });
-    console.log('[EventController] getEventDetail result', result);
 
     if (result.ok === false) {
       switch (result.value.name) {
@@ -385,7 +384,6 @@ class EventController implements IEventController {
     }
 
     try {
-      console.log('[EventController] fetched event detail, fetching RSVP status');
       // fetch RSVP info
       var waitlistPosition = await this.rsvpService.getWaitlistPosition(
         input.eventId,
@@ -397,7 +395,6 @@ class EventController implements IEventController {
         input.actingUserId
       );
     } catch (err) {
-      console.error('[EventController] error while fetching RSVP info', err);
       res.status(500).render('partials/error', { message: 'Unexpected server error.', layout: false });
       return;
     }

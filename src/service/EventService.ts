@@ -170,26 +170,11 @@ export class EventService {
         return Err(EventSearchInvalidInputError());
       }
 
-      const events = await this.repo.getAll();
+      const q = typeof query === "string" ? query.trim() : "";
 
-      let filtered = events.filter((event) => event.status === "published");
+      const results = await this.repo.searchPublishedUpcoming(q);
 
-      if (typeof query !== "string" || query.trim() === "") {
-        return Ok(filtered);
-      }
-
-      const q = query.trim().toLowerCase();
-
-      filtered = filtered.filter((event) => {
-        return (
-          event.title.toLowerCase().includes(q) ||
-          event.description.toLowerCase().includes(q) ||
-          event.location.toLowerCase().includes(q) ||
-          event.category.toLowerCase().includes(q)
-        );
-      });
-
-      return Ok(filtered);
+      return Ok(results);
     } catch {
       return Err(EventDependencyError("Failed to search events."));
     }

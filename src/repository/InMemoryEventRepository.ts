@@ -189,6 +189,27 @@ export class InMemoryEventRepository implements IEventRepository {
       );
   }
 
+  async searchPublishedUpcoming(query?: string): Promise<IEvent[]> {
+    const q = query?.trim()?.toLowerCase();
+
+    return this.events
+      .filter((event) => event.status === "published")
+      .filter((event) => {
+        if (!q) return true;
+
+        return (
+          event.title.toLowerCase().includes(q) ||
+          event.description.toLowerCase().includes(q) ||
+          event.location.toLowerCase().includes(q)
+        );
+      })
+      .sort(
+        (a, b) =>
+          new Date(a.startDatetime).getTime() -
+          new Date(b.startDatetime).getTime()
+      );
+  }
+
   async getAll(): Promise<IEvent[]> {
     return this.events;
   }

@@ -77,6 +77,11 @@ import {
 } from "../events/errors";
 
 export class InMemoryEventRepository implements IEventRepository {
+  private readonly rsvps: {
+    eventId: string;
+    userId: string;
+    status: string;
+  }[] = [];
   private readonly events: IEvent[] = [
     {
       id: "event-1",

@@ -213,6 +213,24 @@ export class InMemoryEventRepository implements IEventRepository {
   async getAll(): Promise<IEvent[]> {
     return this.events;
   }
+
+  async getAllWithAttendeeCount(filterByOrganizerId?: string) {
+    const filteredEvents = filterByOrganizerId
+      ? this.events.filter((e) => e.organizerId === filterByOrganizerId)
+      : this.events;
+
+    const attendeeMap = new Map<string, number>();
+    for (const rsvp of this.rsvps) {
+      if (rsvp.status === "going") {
+        attendeeMap.set(rsvp.eventId, (attendeeMap.get(rsvp.eventId) || 0) + 1);
+      }
+    }
+
+    return filteredEvents.map((event) => ({
+      ...event,
+      attendeeCount: attendeeMap.get(event.id) || 0,
+    }));
+  }
 }
 
 export function CreateInMemoryEventRepository(): IEventRepository {

@@ -56,6 +56,14 @@ export class PrismaRsvpRepository implements IRsvpRepository {
     });
     return rsvp as Rsvp | null;
   }
+
+  async findByUserId(userId: string): Promise<Rsvp[]> {
+    const rsvps = await this.prisma.rsvp.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+    });
+    return rsvps as Rsvp[];
+  }
 }
 
 export function CreatePrismaRsvpRepository(prisma: PrismaClient): IRsvpRepository {

@@ -46,6 +46,7 @@ export class PrismaEventRepository implements IEventRepository {
       });
       return Ok(match as IEvent | null);
     } catch (error) {
+      console.error('[PrismaEventRepository] findById error', error);
       return Err(EventDependencyError("Unable to find event."));
     }
   }

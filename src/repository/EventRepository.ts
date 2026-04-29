@@ -9,7 +9,9 @@ export interface IEventRepository {
   findById(id: string): Promise<Result<IEvent | null, EventError>>;
   update(event: IEvent): Promise<Result<IEvent, EventError>>;
   getAll(): Promise<IEvent[]>;
-  getAllWithAttendeeCount(filterByOrganizerId?: string): Promise<EventWithAttendeeCount[]>;
+  getAllWithAttendeeCount(
+    filterByOrganizerId?: string,
+  ): Promise<EventWithAttendeeCount[]>;
   findFilteredPublishedUpcoming(filters: {
     category?: string;
     date?: "all" | "week" | "weekend";

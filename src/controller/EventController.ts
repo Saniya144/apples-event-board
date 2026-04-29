@@ -197,9 +197,19 @@ class EventController implements IEventController {
     const hasFilters =
       categoryValue.trim() !== "" || dateValue.trim() !== "";
 
+    const user = session.authenticatedUser;
+
+    if (!user) {
+      res.status(401).render("partials/error", {
+        message: "Not authenticated",
+        layout: false,
+      });
+      return;
+    }
+
     const result = hasFilters
-      ? await this.service.getFilteredPublishedEvents(filters)
-      : await this.service.getAllEvents();
+      ? await this.service.getFilteredPublishedEvents(filters, user)
+      : await this.service.getAllEvents(user);
 
     if (!result.ok) {
       const error = result.value as EventError;
@@ -208,16 +218,6 @@ class EventController implements IEventController {
       res.status(status).render("partials/error", {
         message: error.message,
         name: error.name,
-        layout: false,
-      });
-      return;
-    }
-
-    const user = session.authenticatedUser;
-
-    if (!user) {
-      res.status(401).render("partials/error", {
-        message: "Not authenticated",
         layout: false,
       });
       return;
@@ -260,7 +260,18 @@ class EventController implements IEventController {
     session: IAppBrowserSession,
     query?: string | ParsedQs | (string | ParsedQs)[]
   ): Promise<void> {
-    const result = await this.service.searchPublishedUpcomingEvents(query);
+    
+    const user = session.authenticatedUser;
+
+    if (!user) {
+      res.status(401).render("partials/error", {
+        message: "Not authenticated",
+        layout: false,
+      });
+      return;
+    }
+
+    const result = await this.service.searchPublishedUpcomingEvents(query, user);
 
     if (!result.ok) {
       const error = result.value as EventError;

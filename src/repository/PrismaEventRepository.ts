@@ -158,27 +158,26 @@ export class PrismaEventRepository implements IEventRepository {
     return events as IEvent[];
   }
 
-  async getAllWithAttendeeCount(filterByOrganizerId?: string): Promise<EventWithAttendeeCount[]> {
-    const where = filterByOrganizerId ? { organizerId: filterByOrganizerId } : {};
-
+  async getAllWithAttendeeCount(
+    filterByOrganizerId?: string,
+  ): Promise<EventWithAttendeeCount[]> {
     const events = await this.prisma.event.findMany({
-      where,
+      where: filterByOrganizerId ? { organizerId: filterByOrganizerId } : undefined,
     });
 
-    // Count going RSVPs for each event in a single aggregation
     const attendeeCounts = await this.prisma.rsvp.groupBy({
       by: ["eventId"],
       where: { status: "going" },
-      _count: true,
+      _count: { _all: true },
     });
 
-    // Create a map for quick lookup
-    const countMap = new Map(attendeeCounts.map((r) => [r.eventId, r._count]));
+    const attendeeCountMap = new Map(
+      attendeeCounts.map((entry) => [entry.eventId, entry._count._all]),
+    );
 
-    // Combine events with their attendee counts
     return events.map((event) => ({
       ...(event as IEvent),
-      attendeeCount: countMap.get(event.id) || 0,
+      attendeeCount: attendeeCountMap.get(event.id) ?? 0,
     }));
   }
 }

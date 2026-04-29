@@ -39,34 +39,28 @@ export class EventService {
     }
 
     try {
-      const allEvents = await this.eventRepository.getAll();
-      const visibleEvents =
-        input.actingUserRole === "admin"
-          ? allEvents
-          : allEvents.filter((event) => event.organizerId === input.actingUserId);
-
-      const eventsWithStats = await Promise.all(
-        visibleEvents.map(async (event) => {
-          const attendeeCount = await this.rsvpRepository.countGoingByEvent(event.id);
-          const statusGroup: OrganizerDashboardEvent["statusGroup"] =
-            event.status === "cancelled"
-              ? "cancelledOrPast"
-              : event.status === "draft"
-                ? "draft"
-                : "published";
-
-          const canManage =
-            input.actingUserRole === "admin" || event.organizerId === input.actingUserId;
-
-          return {
-            ...event,
-            attendeeCount,
-            statusGroup,
-            canPublish: canManage && event.status === "draft",
-            canCancel: canManage && event.status === "published",
-          } as OrganizerDashboardEvent;
-        }),
+      const eventsWithCounts = await this.eventRepository.getAllWithAttendeeCount(
+        input.actingUserRole === "admin" ? undefined : input.actingUserId,
       );
+
+      const eventsWithStats = eventsWithCounts.map((event) => {
+        const statusGroup: OrganizerDashboardEvent["statusGroup"] =
+          event.status === "cancelled"
+            ? "cancelledOrPast"
+            : event.status === "draft"
+              ? "draft"
+              : "published";
+
+        const canManage =
+          input.actingUserRole === "admin" || event.organizerId === input.actingUserId;
+
+        return {
+          ...event,
+          statusGroup,
+          canPublish: canManage && event.status === "draft",
+          canCancel: canManage && event.status === "published",
+        } as OrganizerDashboardEvent;
+      });
 
       return Ok(eventsWithStats);
     } catch (e) {

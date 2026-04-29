@@ -6,8 +6,7 @@ import { CreateEventController } from "../../src/controller/EventController";
 import { EventService } from "../../src/service/EventService";
 import { CreateRsvpService } from "../../src/service/RsvpService";
 import { createOrganizerRouter } from "../../src/organizer/organizer.routes";
-import { createPrismaEventRepository, setupPrismaRouteTests } from "../prismaRouteTestHelper";
-import { CreateInMemoryRsvpRepository } from "../../src/repository/InMemoryRsvpRepository";
+import { createPrismaEventRepository, createPrismaRsvpRepository, setupPrismaRouteTests } from "../prismaRouteTestHelper";
 import type { UserRole } from "../../src/auth/User";
 
 setupPrismaRouteTests();
@@ -41,7 +40,7 @@ function buildApp(userId: string, role: UserRole) {
   app.set("layout", "layouts/base");
 
   const eventRepository = createPrismaEventRepository();
-  const rsvpRepository = CreateInMemoryRsvpRepository();
+  const rsvpRepository = createPrismaRsvpRepository();
   const eventService = new EventService(eventRepository);
   const eventController = CreateEventController(eventService, CreateRsvpService(rsvpRepository, eventRepository));
 
@@ -105,20 +104,26 @@ describe("GET /organizer/dashboard", () => {
   it("renders accurate attendee count", async () => {
     const { app, rsvpRepository } = buildApp("user-staff", "staff");
 
-    await rsvpRepository.create({
+    await rsvpRepository.save({
+      id: "rsvp-1",
       eventId: "event-2",
       userId: "user-1",
       status: "going",
+      createdAt: new Date(),
     });
-    await rsvpRepository.create({
+    await rsvpRepository.save({
+      id: "rsvp-2",
       eventId: "event-2",
       userId: "user-2",
       status: "going",
+      createdAt: new Date(),
     });
-    await rsvpRepository.create({
+    await rsvpRepository.save({
+      id: "rsvp-3",
       eventId: "event-2",
       userId: "user-3",
       status: "waitlisted",
+      createdAt: new Date(),
     });
 
     const res = await request(app).get("/organizer/dashboard");

@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaEventRepository } from "../src/repository/PrismaEventRepository";
+import { PrismaRSVPRepository } from "../src/rsvp/PrismaRSVPRepository";
 
 const prisma = new PrismaClient({
   adapter: new PrismaBetterSqlite3({ url: "file:./prisma/dev.db" }),
@@ -10,6 +11,10 @@ export { prisma };
 
 export function createPrismaEventRepository(): PrismaEventRepository {
   return new PrismaEventRepository(prisma);
+}
+
+export function createPrismaRsvpRepository(): PrismaRSVPRepository {
+  return new PrismaRSVPRepository(prisma);
 }
 
 export async function connectPrisma(): Promise<void> {

@@ -67,7 +67,7 @@
 //   return new InMemoryEventRepository();
 // }
 
-import type { IEventRepository } from "./EventRepository";
+import type { IEventRepository, EventWithAttendeeCount } from "./EventRepository";
 import type { IEvent } from "../model/Event";
 import { Ok, Err, type Result } from "../lib/result";
 import {
@@ -214,21 +214,24 @@ export class InMemoryEventRepository implements IEventRepository {
     return this.events;
   }
 
-  async getAllWithAttendeeCount(filterByOrganizerId?: string) {
+  async getAllWithAttendeeCount(
+    filterByOrganizerId?: string,
+  ): Promise<EventWithAttendeeCount[]> {
     const filteredEvents = filterByOrganizerId
-      ? this.events.filter((e) => e.organizerId === filterByOrganizerId)
+      ? this.events.filter((event) => event.organizerId === filterByOrganizerId)
       : this.events;
 
-    const attendeeMap = new Map<string, number>();
+    const attendeeCounts = new Map<string, number>();
+
     for (const rsvp of this.rsvps) {
       if (rsvp.status === "going") {
-        attendeeMap.set(rsvp.eventId, (attendeeMap.get(rsvp.eventId) || 0) + 1);
+        attendeeCounts.set(rsvp.eventId, (attendeeCounts.get(rsvp.eventId) ?? 0) + 1);
       }
     }
 
     return filteredEvents.map((event) => ({
       ...event,
-      attendeeCount: attendeeMap.get(event.id) || 0,
+      attendeeCount: attendeeCounts.get(event.id) ?? 0,
     }));
   }
 }

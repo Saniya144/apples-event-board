@@ -54,6 +54,9 @@ export class PrismaRSVPRepository implements RSVPRepository {
   }
 
   async save(rsvp: RSVP): Promise<RSVP> {
+    const createdAt =
+      rsvp.createdAt instanceof Date ? rsvp.createdAt.toISOString() : rsvp.createdAt;
+
     const created = await this.prisma.rsvp.upsert({
       where: { id: rsvp.id },
       update: {
@@ -64,7 +67,7 @@ export class PrismaRSVPRepository implements RSVPRepository {
         eventId: rsvp.eventId,
         userId: rsvp.userId,
         status: rsvp.status,
-        createdAt: rsvp.createdAt,
+        createdAt,
       },
     });
 

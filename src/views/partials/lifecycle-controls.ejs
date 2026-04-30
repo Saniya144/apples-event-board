@@ -1,0 +1,51 @@
+<div id="lifecycle-controls" class="bg-white rounded-xl shadow p-6">
+  <h2 class="text-lg font-semibold text-slate-900 mb-4">Actions</h2>
+
+  <div class="flex flex-wrap gap-3">
+    <% if (event.canPublish) { %>
+      <form
+        hx-post="/events/<%= event.id %>/publish"
+        hx-target="#lifecycle-controls"
+        hx-swap="outerHTML"
+      >
+        <button
+          type="submit"
+          class="rounded-lg bg-green-600 text-white px-4 py-2"
+        >
+          Publish Event
+        </button>
+      </form>
+    <% } %>
+
+    <% if (event.canCancel && event.status === "published") { %>
+      <form
+        hx-post="/events/<%= event.id %>/cancel"
+        hx-target="#lifecycle-controls"
+        hx-swap="outerHTML"
+      >
+        <button
+          type="submit"
+          class="rounded-lg bg-red-600 text-white px-4 py-2"
+        >
+          Cancel Event
+        </button>
+      </form>
+    <% } %>
+
+    <% if (event.canEdit) { %>
+      <button class="rounded-lg bg-slate-900 text-white px-4 py-2 opacity-60 cursor-not-allowed" disabled>
+        Edit Event
+      </button>
+    <% } %>
+
+    <% if (event.canRsvp) { %>
+      <button class="rounded-lg bg-blue-600 text-white px-4 py-2 opacity-60 cursor-not-allowed" disabled>
+        RSVP
+      </button>
+    <% } %>
+  </div>
+
+  <p class="text-sm text-slate-500 mt-4">
+    Current status: <span class="font-medium"><%= event.status %></span>
+  </p>
+</div>

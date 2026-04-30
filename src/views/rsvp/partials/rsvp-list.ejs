@@ -1,0 +1,79 @@
+<% if (rsvps.length === 0) { %>
+  <p class="text-gray-500">You have no RSVPs yet. <a href="/home" class="underline text-blue-600">Browse events</a>.</p>
+<% } else { %>
+  <% 
+    const now = new Date();
+    const byStartTime = (left, right) =>
+      new Date(left.event.startDatetime).getTime() - new Date(right.event.startDatetime).getTime();
+    const sorted = [...rsvps].sort(byStartTime);
+    const upcoming = sorted.filter(rsvp => rsvp.event.status !== 'cancelled' && new Date(rsvp.event.endDatetime) > now);
+    const past = sorted.filter(rsvp => rsvp.event.status === 'cancelled' || new Date(rsvp.event.endDatetime) <= now);
+  %>
+  
+  <% if (upcoming.length > 0) { %>
+    <h2 class="text-xl font-semibold mb-4 mt-6">Upcoming Events</h2>
+    <ul class="space-y-4 mb-8">
+      <% upcoming.forEach(rsvp => { %>
+        <li id="rsvp-<%= rsvp.id %>" class="border rounded-lg p-4 flex items-start justify-between">
+          <div class="flex-1">
+            <h2 class="font-semibold text-lg"><%= rsvp.event.title %></h2>
+            <p class="text-sm text-gray-500">
+              <%= rsvp.event.location %> &middot; <%= rsvp.event.category %>
+            </p>
+            <p class="text-sm text-gray-500 mt-1">
+              <%= rsvp.event.startDatetime.toLocaleDateString() %>
+              <%= rsvp.event.startDatetime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %>
+              &ndash;
+              <%= rsvp.event.endDatetime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %>
+            </p>
+          </div>
+          
+          <div class="flex flex-col items-end gap-2">
+            <span class="text-sm font-medium px-2 py-1 rounded-full
+              <%= rsvp.status === 'going' ? 'bg-green-100 text-green-800' :
+                 rsvp.status === 'waitlisted' ? 'bg-yellow-100 text-yellow-800' :
+                 'bg-red-100 text-red-800' %>">
+              <%= rsvp.status.charAt(0).toUpperCase() + rsvp.status.slice(1) %>
+            </span>
+            
+            <% if (rsvp.status !== 'cancelled') { %>
+              <button
+                class="cancel-rsvp-btn text-sm px-3 py-1 bg-red-50 text-red-600 rounded hover:bg-red-100"
+                hx-post="/rsvps/<%= rsvp.eventId %>/toggle"
+                hx-headers='{"X-CSRF": "TODO"}'
+                hx-swap="delete"
+                hx-target="closest li"
+              >
+                Cancel RSVP
+              </button>
+            <% } %>
+          </div>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+  
+  <% if (past.length > 0) { %>
+    <h2 class="text-xl font-semibold mb-4 mt-6 text-gray-600">Past Events</h2>
+    <ul class="space-y-4 opacity-75">
+      <% past.forEach(rsvp => { %>
+        <li class="border rounded-lg p-4 bg-gray-50">
+          <div>
+            <h2 class="font-semibold text-lg text-gray-600"><%= rsvp.event.title %></h2>
+            <p class="text-sm text-gray-500">
+              <%= rsvp.event.location %> &middot; <%= rsvp.event.category %>
+            </p>
+            <p class="text-sm text-gray-500 mt-1">
+              <%= rsvp.event.startDatetime.toLocaleDateString() %>
+            </p>
+          </div>
+          <div class="mt-2">
+            <span class="text-sm font-medium px-2 py-1 rounded-full bg-gray-200 text-gray-600">
+              <%= rsvp.status.charAt(0).toUpperCase() + rsvp.status.slice(1) %>
+            </span>
+          </div>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+<% } %>

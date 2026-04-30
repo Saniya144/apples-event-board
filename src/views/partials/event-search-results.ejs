@@ -1,0 +1,18 @@
+<% if (events && events.length > 0) { %>
+  <% events.forEach(event => { %>
+    <div>
+      <a href="/events/<%= event.id %>" class="font-bold text-blue-600 hover:underline">
+        <%= event.title %>
+      </a><br />
+      <span><%= event.location %></span><br />
+      <span><%= event.category %></span><br />
+      <span><strong>Start:</strong> <%= new Date(event.startDatetime).toLocaleString() %></span><br />
+      <span><%= event.description %></span><br />
+      <span>Created by: <%= event.organizerId %></span><br />
+      <a href="/events/<%= event.id %>/edit">Edit</a>
+      <hr />
+    </div>
+  <% }) %>
+<% } else { %>
+  <p>No matching events found.</p>
+<% } %>

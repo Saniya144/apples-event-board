@@ -1,3 +1,66 @@
+<h1>Event Dashboard</h1>
+
+<a href="/events/new">+ Create Event</a>
+
+<hr />
+
+<h2>All Events</h2>
+
+<form
+  id="event-filter-form"
+  action="/home"
+  method="GET"
+  hx-get="/home"
+  hx-target="#event-list"
+  hx-swap="innerHTML"
+  hx-push-url="true"
+>
+  <label for="category">Category:</label>
+  <input
+    type="text"
+    id="category"
+    name="category"
+    value="<%= filters?.category || '' %>"
+    hx-trigger="keyup changed delay:300ms"
+    hx-include="#event-filter-form"
+  />
+
+  <label for="date">Timeframe:</label>
+  <select
+    id="date"
+    name="date"
+    hx-trigger="change"
+    hx-include="#event-filter-form"
+  >
+    <option value="" <%= !filters?.date ? "selected" : "" %>>All upcoming</option>
+    <option value="week" <%= filters?.date === "week" ? "selected" : "" %>>This week</option>
+    <option value="weekend" <%= filters?.date === "weekend" ? "selected" : "" %>>This weekend</option>
+  </select>
+
+  <button type="submit">Filter</button>
+</form>
+
+<form id="event-search-form">
+  <label for="q">Search:</label>
+  <input
+    type="text"
+    id="q"
+    name="q"
+    placeholder="Search events"
+    value="<%= searchQuery || '' %>"
+    hx-get="/events/search"
+    hx-target="#event-list"
+    hx-swap="innerHTML"
+    hx-trigger="keyup changed delay:300ms, search"
+  />
+</form>
+
+<hr />
+
+<div id="event-list">
+  <%- include("partials/event-search-results", { events }) %>
+</div>
+
 <section class="mb-5 p-6 border border-slate-200 rounded-2xl bg-gradient-to-b from-white to-slate-50 shadow-lg">
   <h1 class="text-3xl font-bold text-slate-900 mb-3">Welcome to Project Starter</h1>
   <p class="text-slate-500">

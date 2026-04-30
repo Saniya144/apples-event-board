@@ -1,0 +1,21 @@
+<h1>  Edit </h1>
+<div id="form-error"></div>
+<form
+  hx-post="/events/<%= event.id %>/edit"
+  hx-target="#form-error"
+  hx-swap="innerHTML"
+>
+    <input name="title" value="<%= event.title %>"  />
+    <br /><br />
+    <input name = "location" value="<%=event.location%>" />
+    <br /><br />
+    <input type = "datetime-local" name="startTime" />
+    <br /><br />
+    <input type = "datetime-local" name="endTime" />
+    <br /><br />
+    <input name = "description" value="<%=event.description%>"/>
+    <br /><br />
+    <button type ="submit">Save  Changes</button>
+  
+  </form>
+  <a href="/home"> Back</a>

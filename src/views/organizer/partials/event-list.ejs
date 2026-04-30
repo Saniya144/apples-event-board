@@ -1,0 +1,60 @@
+<%
+  const sections = [
+    {
+      key: "published",
+      title: "Published",
+      description: "Live events that attendees can RSVP to.",
+      events: groupedEvents.published,
+      emptyMessage: "No published events yet.",
+      sectionClass: "border-green-200 bg-green-50/50",
+    },
+    {
+      key: "draft",
+      title: "Draft",
+      description: "Work-in-progress events not visible to members.",
+      events: groupedEvents.draft,
+      emptyMessage: "No draft events.",
+      sectionClass: "border-slate-200 bg-slate-50/60",
+    },
+    {
+      key: "cancelledOrPast",
+      title: "Cancelled Or Past",
+      description: "Archived events with no active attendance updates.",
+      events: groupedEvents.cancelledOrPast,
+      emptyMessage: "No cancelled or past events.",
+      sectionClass: "border-red-200 bg-red-50/40",
+    },
+  ];
+
+  const totalEvents = sections.reduce((sum, section) => sum + section.events.length, 0);
+%>
+
+<% if (totalEvents === 0) { %>
+  <p class="text-gray-500">You have not created any events yet.</p>
+<% } else { %>
+  <div class="space-y-6">
+    <% sections.forEach((section) => { %>
+      <section class="border rounded-xl p-4 <%= section.sectionClass %>">
+        <div class="flex items-baseline justify-between gap-4 mb-3">
+          <div>
+            <h2 class="text-lg font-semibold"><%= section.title %></h2>
+            <p class="text-sm text-gray-500"><%= section.description %></p>
+          </div>
+          <span class="text-xs font-semibold uppercase tracking-wide text-gray-600">
+            <%= section.events.length %> event<%= section.events.length === 1 ? "" : "s" %>
+          </span>
+        </div>
+
+        <% if (section.events.length === 0) { %>
+          <p id="<%= section.key %>-empty-state" class="text-sm text-gray-500"><%= section.emptyMessage %></p>
+        <% } else { %>
+          <ul id="<%= section.key %>-events" class="space-y-3">
+            <% section.events.forEach((event) => { %>
+              <%- include('event-row', { event, actingUserRole }) %>
+            <% }) %>
+          </ul>
+        <% } %>
+      </section>
+    <% }) %>
+  </div>
+<% } %>

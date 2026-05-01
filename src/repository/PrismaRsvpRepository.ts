@@ -1,26 +1,22 @@
 import { PrismaClient } from "@prisma/client";
-import type {
-  RSVPRepository,
-  RSVP,
-  RSVPStatus,
-  RSVPWithEvent,
-} from "../rsvp/RSVPRepository";
+import type { IRsvpRepository, RsvpWithEvent } from "./RsvpRepository";
+import type { Rsvp, RsvpStatus } from "../model/Rsvp";
 
-export class PrismaRsvpRepository implements RSVPRepository {
+export class PrismaRsvpRepository implements IRsvpRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
   async findByEventAndUser(
     eventId: string,
     userId: string
-  ): Promise<RSVP | null> {
+  ): Promise<Rsvp | null> {
     const rsvp = await this.prisma.rsvp.findUnique({
       where: { eventId_userId: { eventId, userId } },
     });
 
-    return rsvp as unknown as RSVP | null;
+    return rsvp as unknown as Rsvp | null;
   }
 
-  async create(input: Omit<RSVP, "id" | "createdAt">): Promise<RSVP> {
+  async create(input: Omit<Rsvp, "id" | "createdAt">): Promise<Rsvp> {
     const rsvp = await this.prisma.rsvp.create({
       data: {
         eventId: input.eventId,
@@ -30,28 +26,28 @@ export class PrismaRsvpRepository implements RSVPRepository {
       },
     });
 
-    return rsvp as unknown as RSVP;
+    return rsvp as unknown as Rsvp;
   }
 
-  async updateStatus(id: string, status: RSVPStatus): Promise<RSVP | null> {
+  async updateStatus(id: string, status: RsvpStatus): Promise<Rsvp | null> {
     try {
       const updated = await this.prisma.rsvp.update({
         where: { id },
         data: { status },
       });
 
-      return updated as unknown as RSVP;
+      return updated as unknown as Rsvp;
     } catch {
       return null;
     }
   }
 
-  async listByEvent(eventId: string): Promise<RSVP[]> {
+  async listByEvent(eventId: string): Promise<Rsvp[]> {
     const rsvps = await this.prisma.rsvp.findMany({
       where: { eventId },
     });
 
-    return rsvps as unknown as RSVP[];
+    return rsvps as unknown as Rsvp[];
   }
 
   async countGoingByEvent(eventId: string): Promise<number> {
@@ -60,16 +56,16 @@ export class PrismaRsvpRepository implements RSVPRepository {
     });
   }
 
-  async findEarliestWaitlisted(eventId: string): Promise<RSVP | null> {
+  async findEarliestWaitlisted(eventId: string): Promise<Rsvp | null> {
     const rsvp = await this.prisma.rsvp.findFirst({
       where: { eventId, status: "waitlisted" },
       orderBy: { createdAt: "asc" },
     });
 
-    return rsvp as unknown as RSVP | null;
+    return rsvp as unknown as Rsvp | null;
   }
 
-  async findByUserId(userId: string): Promise<RSVPWithEvent[]> {
+  async findByUserId(userId: string): Promise<RsvpWithEvent[]> {
     const rsvps = await this.prisma.rsvp.findMany({
       where: { userId },
       include: {
@@ -78,10 +74,10 @@ export class PrismaRsvpRepository implements RSVPRepository {
       orderBy: { createdAt: "desc" },
     });
 
-    return rsvps as unknown as RSVPWithEvent[];
+    return rsvps as unknown as RsvpWithEvent[];
   }
 
-  async save(rsvp: RSVP): Promise<RSVP> {
+  async save(rsvp: Rsvp): Promise<Rsvp> {
     const saved = await this.prisma.rsvp.upsert({
       where: {
         eventId_userId: {
@@ -91,18 +87,18 @@ export class PrismaRsvpRepository implements RSVPRepository {
       },
       update: {
         status: rsvp.status,
-        createdAt: rsvp.createdAt.toISOString(),
+        createdAt: rsvp.createdAt,
       },
       create: {
         id: rsvp.id,
         eventId: rsvp.eventId,
         userId: rsvp.userId,
         status: rsvp.status,
-        createdAt: rsvp.createdAt.toISOString(),
+        createdAt: rsvp.createdAt,
       },
     });
 
-    return saved as unknown as RSVP;
+    return saved as unknown as Rsvp;
   }
 
   async delete(id: string): Promise<void> {
@@ -114,6 +110,6 @@ export class PrismaRsvpRepository implements RSVPRepository {
 
 export function CreatePrismaRsvpRepository(
   prisma: PrismaClient
-): RSVPRepository {
+): IRsvpRepository {
   return new PrismaRsvpRepository(prisma);
 }

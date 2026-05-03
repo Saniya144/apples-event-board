@@ -51,7 +51,7 @@ export function createComposedApp(logger?: ILoggingService): IApp {
   const organizerRouter = createOrganizerRouter(eventRepository, rsvpRepository);
 
   // RSVP Dashboard wiring (Prisma-backed for Feature 7, Sprint 3)
-  const rsvpRouter = createRsvpRouter(prisma);
+  const rsvpRouter = createRsvpRouter(rsvpRepository, eventRepository);
 
   return CreateApp(authController, eventController, rsvpController, organizerRouter, rsvpRouter, resolvedLogger);
 }

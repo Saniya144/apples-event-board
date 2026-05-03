@@ -1,36 +1,21 @@
 import express from "express";
-import { PrismaClient } from "@prisma/client";
-import { RSVPController } from "./RSVPController";
-import { RSVPService } from "./RSVPService";
-import { InMemoryRSVPRepository } from "./InMemoryRSVPRepository";
-import { PrismaRsvpRepository } from "../repository/PrismaRsvpRepository";
+import { CreateRsvpController } from "../controller/RsvpController";
+import { CreateRsvpService } from "../service/RsvpService";
+import { CreateLoggingService } from "../service/LoggingService";
+import type { IRsvpRepository } from "../repository/RsvpRepository";
+import type { IEventRepository } from "../repository/EventRepository";
 
-// Default export for backward compatibility (in-memory, for tests that don't pass Prisma)
-export const rsvpRepository = new InMemoryRSVPRepository();
-const rsvpService = new RSVPService(rsvpRepository);
-const rsvpController = new RSVPController(rsvpService);
-
-export const rsvpRouter = express.Router();
-
-// GET dashboard
-rsvpRouter.get("/dashboard", rsvpController.getDashboard);
-
-// POST toggle RSVP (reuses Feature 4's endpoint)
-rsvpRouter.post("/:eventId/toggle", rsvpController.toggleRSVP);
-
-// Factory function for Prisma-backed router (used by the composed app in Sprint 3)
-export function createRsvpRouter(prisma: PrismaClient): express.Router {
-  const prismaRepository = new PrismaRsvpRepository(prisma);
-  const prismaService = new RSVPService(prismaRepository);
-  const prismaController = new RSVPController(prismaService);
+export function createRsvpRouter(
+  rsvpRepository: IRsvpRepository,
+  eventRepository: IEventRepository
+): express.Router {
+  const logger = CreateLoggingService();
+  const service = CreateRsvpService(rsvpRepository, eventRepository);
+  const controller = CreateRsvpController(service, logger);
 
   const router = express.Router();
-  
-  // GET dashboard
-  router.get("/dashboard", prismaController.getDashboard);
-
-  // POST toggle RSVP (reuses Feature 4's endpoint)
-  router.post("/:eventId/toggle", prismaController.toggleRSVP);
+  router.get("/dashboard", controller.getDashboard);
+  router.post("/:eventId/toggle", controller.toggleRSVP);
 
   return router;
 }

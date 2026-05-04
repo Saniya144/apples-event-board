@@ -40,19 +40,45 @@
   <button type="submit">Filter</button>
 </form>
 
-<form id="event-search-form">
-  <label for="q">Search:</label>
-  <input
-    type="text"
-    id="q"
-    name="q"
-    placeholder="Search events"
-    value="<%= searchQuery || '' %>"
-    hx-get="/events/search"
-    hx-target="#event-list"
-    hx-swap="innerHTML"
-    hx-trigger="keyup changed delay:300ms, search"
-  />
+<form
+  id="event-search-form"
+  x-data="{ q: '<%= searchQuery || "" %>' }"
+  action="/events/search"
+  method="GET"
+  class="mb-6"
+>
+  <label for="q" class="mb-2 block text-sm font-semibold text-slate-700">
+    Search events
+  </label>
+
+  <div class="relative">
+    <input
+      x-ref="searchInput"
+      type="search"
+      id="q"
+      name="q"
+      x-model="q"
+      placeholder="Search by title, description, or location..."
+      value="<%= searchQuery || '' %>"
+      hx-get="/events/search"
+      hx-target="#event-list"
+      hx-swap="innerHTML"
+      hx-trigger="keyup changed delay:300ms, search"
+      hx-push-url="true"
+      class="w-full rounded-2xl border border-slate-300 bg-white px-5 py-3 pr-12 text-base shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+    />
+
+    <button
+      type="button"
+      x-show="q.length > 0"
+      x-cloak
+      x-on:click="q = ''; $nextTick(() => $refs.searchInput?.dispatchEvent(new Event('search', { bubbles: true })))"
+      class="absolute right-3 top-1/2 -translate-y-1/2 rounded-full px-2 py-1 text-sm font-semibold text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+      aria-label="Clear search"
+    >
+      ✕
+    </button>
+  </div>
 </form>
 
 <hr />

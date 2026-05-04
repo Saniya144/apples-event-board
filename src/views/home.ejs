@@ -8,36 +8,77 @@
 
 <form
   id="event-filter-form"
+  x-data="{
+    category: '<%= filters?.category || "" %>',
+    date: '<%= filters?.date || "" %>',
+    get hasFilters() {
+      return this.category.trim() !== '' || this.date.trim() !== ''
+    }
+  }"
   action="/home"
   method="GET"
   hx-get="/home"
   hx-target="#event-list"
   hx-swap="innerHTML"
   hx-push-url="true"
+  class="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
 >
-  <label for="category">Category:</label>
-  <input
-    type="text"
-    id="category"
-    name="category"
-    value="<%= filters?.category || '' %>"
-    hx-trigger="keyup changed delay:300ms"
-    hx-include="#event-filter-form"
-  />
+  <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <div class="grid flex-1 gap-4 sm:grid-cols-2">
+      <div>
+        <label for="category" class="mb-2 block text-sm font-semibold text-slate-700">
+          Category
+        </label>
+        <input
+          type="text"
+          id="category"
+          name="category"
+          x-model="category"
+          value="<%= filters?.category || '' %>"
+          placeholder="All categories"
+          hx-trigger="keyup changed delay:300ms"
+          hx-include="#event-filter-form"
+          class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+        />
+      </div>
 
-  <label for="date">Timeframe:</label>
-  <select
-    id="date"
-    name="date"
-    hx-trigger="change"
-    hx-include="#event-filter-form"
-  >
-    <option value="" <%= !filters?.date ? "selected" : "" %>>All upcoming</option>
-    <option value="week" <%= filters?.date === "week" ? "selected" : "" %>>This week</option>
-    <option value="weekend" <%= filters?.date === "weekend" ? "selected" : "" %>>This weekend</option>
-  </select>
+      <div>
+        <label for="date" class="mb-2 block text-sm font-semibold text-slate-700">
+          Timeframe
+        </label>
+        <select
+          id="date"
+          name="date"
+          x-model="date"
+          hx-trigger="change"
+          hx-include="#event-filter-form"
+          class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+        >
+          <option value="" <%= !filters?.date ? "selected" : "" %>>All upcoming</option>
+          <option value="week" <%= filters?.date === "week" ? "selected" : "" %>>This week</option>
+          <option value="weekend" <%= filters?.date === "weekend" ? "selected" : "" %>>This weekend</option>
+        </select>
+      </div>
+    </div>
 
-  <button type="submit">Filter</button>
+    <div class="flex items-center gap-3">
+      <button
+        type="submit"
+        class="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+      >
+        Apply filters
+      </button>
+
+      <a
+        href="/home"
+        x-show="hasFilters"
+        x-cloak
+        class="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+      >
+        Clear filters
+      </a>
+    </div>
+  </div>
 </form>
 
 <form

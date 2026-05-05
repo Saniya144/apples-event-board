@@ -1,54 +1,38 @@
-<!-- src/views/partials/rsvp-button.ejs -->
-<div id="rsvp-section">
-  <% if (rsvpStatus === "going") { %>
-    <form
-      hx-post="/events/<%= eventId %>/rsvp"
-      hx-target="#rsvp-section"
-      hx-swap="outerHTML"
+<div id="rsvp-section"
+  x-data="{ status: '<%= rsvpStatus ?? 'none' %>', loading: false }"
+>
+  <form
+    hx-post="/events/<%= eventId %>/rsvp"
+    hx-target="#rsvp-section"
+    hx-swap="outerHTML"
+    @htmx:before-request="loading = true"
+  >
+    <button
+      type="submit"
+      :disabled="loading"
+      x-transition:enter="transition ease-out duration-300"
+      x-transition:enter-start="opacity-0 scale-95"
+      x-transition:enter-end="opacity-100 scale-100"
+      :class="{
+        'bg-green-600 hover:bg-green-700': status === 'going',
+        'bg-yellow-500 hover:bg-yellow-600': status === 'waitlisted',
+        'bg-blue-600 hover:bg-blue-700': status !== 'going' && status !== 'waitlisted',
+        'opacity-50 cursor-wait': loading
+      }"
+      class="rounded-lg text-white px-4 py-2 transition-colors duration-200"
     >
-      <button
-        type="submit"
-        class="rounded-lg bg-green-600 text-white px-4 py-2 hover:bg-green-700 transition-colors"
-      >
-        ✓ Going — Click to Cancel
-      </button>
-    </form>
-
-  <% } else if (rsvpStatus === "waitlisted") { %>
-    <form
-      hx-post="/events/<%= eventId %>/rsvp"
-      hx-target="#rsvp-section"
-      hx-swap="outerHTML"
-    >
-      <button
-        type="submit"
-        class="rounded-lg bg-yellow-500 text-white px-4 py-2 hover:bg-yellow-600 transition-colors"
-      >
-        ⏳ Waitlisted — Click to Leave Waitlist
-      </button>
-    </form>
-
-  <% } else { %>
-    <form
-      hx-post="/events/<%= eventId %>/rsvp"
-      hx-target="#rsvp-section"
-      hx-swap="outerHTML"
-    >
-      <button
-        type="submit"
-        class="rounded-lg bg-blue-600 text-white px-4 py-2 hover:bg-blue-700 transition-colors"
-      >
-        RSVP to this Event
-      </button>
-    </form>
-  <% } %>
+      <span x-show="loading">Loading...</span>
+      <span x-show="!loading && status === 'going'">✓ Going — Click to Cancel</span>
+      <span x-show="!loading && status === 'waitlisted'">⏳ Waitlisted — Click to Leave Waitlist</span>
+      <span x-show="!loading && status !== 'going' && status !== 'waitlisted'">RSVP to this Event</span>
+    </button>
+  </form>
 
   <% if (rsvpError) { %>
     <p class="text-sm text-red-600 mt-2"><%= rsvpError %></p>
   <% } %>
 </div>
 
-<%# Out-of-band swap to update attendance count without page reload %>
 <% if (typeof attendeeCount !== 'undefined' && attendeeCount !== null) { %>
 <div id="attendance-count" hx-swap-oob="true" class="rounded-lg border p-4 md:col-span-2">
   <p class="font-semibold text-slate-800">Attendance</p>

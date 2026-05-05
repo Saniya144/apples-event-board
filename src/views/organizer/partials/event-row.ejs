@@ -2,70 +2,111 @@
   const start = new Date(event.startDatetime);
   const end = new Date(event.endDatetime);
   const statusLabel = event.status;
-  const oobAttrs = typeof oobTarget === "string" && oobTarget
-    ? ` hx-swap-oob="beforeend:#${oobTarget}"`
-    : "";
+  const safeDomId = event.id.replace(/[^A-Za-z0-9_-]/g, "-");
   const oobDeleteEmptyState = typeof oobDeleteEmptyStateId === "string" && oobDeleteEmptyStateId
     ? `<div id="${oobDeleteEmptyStateId}" hx-swap-oob="delete"></div>`
     : "";
 %>
 <%- oobDeleteEmptyState %>
-<li class="border rounded-lg p-4 bg-white" id="organizer-event-<%= event.id %>"<%- oobAttrs %>>
-  <div class="flex items-start justify-between gap-4">
-    <div>
-      <a href="/events/<%= event.id %>" class="font-semibold text-lg text-blue-700 hover:underline">
-        <%= event.title %>
-      </a>
-      <p class="text-sm text-gray-500">
-        <%= event.location %> &middot; <%= event.category %>
-      </p>
-      <p class="text-sm text-gray-500 mt-1">
-        <%= start.toLocaleDateString() %>
-        <%= start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) %>
-        &ndash;
-        <%= end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) %>
-      </p>
-      <p class="text-sm text-gray-500 mt-1">
-        Attendance: <%= event.attendeeCount %>
-        <% if (event.capacity !== null) { %>
-          / <%= event.capacity %>
-        <% } else { %>
-          / no limit
+<% if (typeof oobTarget === "string" && oobTarget) { %>
+  <div id="organizer-event-<%= safeDomId %>" hx-swap-oob="delete"></div>
+  <li
+    class="border rounded-lg p-4 bg-white"
+    id="organizer-event-<%= safeDomId %>"
+    hx-swap-oob="beforeend:#<%= oobTarget %>"
+  >
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <a href="/events/<%= event.id %>" class="font-semibold text-lg text-blue-700 hover:underline">
+          <%= event.title %>
+        </a>
+        <p class="text-sm text-gray-500">
+          <%= event.location %> &middot; <%= event.category %>
+        </p>
+        <p class="text-sm text-gray-500 mt-1">
+          <%= start.toLocaleDateString() %>
+          <%= start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) %>
+          &ndash;
+          <%= end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) %>
+        </p>
+        <p class="text-sm text-gray-500 mt-1">
+          Attendance: <%= event.attendeeCount %>
+          <% if (event.capacity !== null) { %>
+            / <%= event.capacity %>
+          <% } else { %>
+            / no limit
+          <% } %>
+        </p>
+        <% if (actingUserRole === "admin") { %>
+          <p class="text-xs text-gray-400 mt-1">Organizer: <%= event.organizerId %></p>
         <% } %>
-      </p>
-      <% if (actingUserRole === "admin") { %>
-        <p class="text-xs text-gray-400 mt-1">Organizer: <%= event.organizerId %></p>
-      <% } %>
+      </div>
+
+      <div class="flex flex-col items-end gap-2">
+        <span class="text-xs font-medium px-2 py-1 rounded-full <%= event.status === "published" ? "bg-green-100 text-green-800" : event.status === "draft" ? "bg-gray-100 text-gray-800" : "bg-red-100 text-red-800" %>">
+          <%= statusLabel %>
+        </span>
+      </div>
     </div>
+  </li>
+<% } else { %>
+  <li class="border rounded-lg p-4 bg-white" id="organizer-event-<%= safeDomId %>">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <a href="/events/<%= event.id %>" class="font-semibold text-lg text-blue-700 hover:underline">
+          <%= event.title %>
+        </a>
+        <p class="text-sm text-gray-500">
+          <%= event.location %> &middot; <%= event.category %>
+        </p>
+        <p class="text-sm text-gray-500 mt-1">
+          <%= start.toLocaleDateString() %>
+          <%= start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) %>
+          &ndash;
+          <%= end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) %>
+        </p>
+        <p class="text-sm text-gray-500 mt-1">
+          Attendance: <%= event.attendeeCount %>
+          <% if (event.capacity !== null) { %>
+            / <%= event.capacity %>
+          <% } else { %>
+            / no limit
+          <% } %>
+        </p>
+        <% if (actingUserRole === "admin") { %>
+          <p class="text-xs text-gray-400 mt-1">Organizer: <%= event.organizerId %></p>
+        <% } %>
+      </div>
 
-    <div class="flex flex-col items-end gap-2">
-      <span class="text-xs font-medium px-2 py-1 rounded-full <%= event.status === "published" ? "bg-green-100 text-green-800" : event.status === "draft" ? "bg-gray-100 text-gray-800" : "bg-red-100 text-red-800" %>">
-        <%= statusLabel %>
-      </span>
+      <div class="flex flex-col items-end gap-2">
+        <span class="text-xs font-medium px-2 py-1 rounded-full <%= event.status === "published" ? "bg-green-100 text-green-800" : event.status === "draft" ? "bg-gray-100 text-gray-800" : "bg-red-100 text-red-800" %>">
+          <%= statusLabel %>
+        </span>
 
-      <% if (event.canPublish) { %>
-        <form
-          hx-post="/events/<%= event.id %>/publish"
-          hx-target="#organizer-event-<%= event.id %>"
-          hx-swap="delete"
-        >
-          <button type="submit" class="text-sm px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700">
-            Publish
-          </button>
-        </form>
-      <% } %>
+        <% if (event.canPublish) { %>
+          <form
+            hx-post="/events/<%= event.id %>/publish"
+            hx-target="#event-list"
+            hx-swap="innerHTML"
+          >
+            <button type="submit" class="text-sm px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700">
+              Publish
+            </button>
+          </form>
+        <% } %>
 
-      <% if (event.canCancel) { %>
-        <form
-          hx-post="/events/<%= event.id %>/cancel"
-          hx-target="#organizer-event-<%= event.id %>"
-          hx-swap="delete"
-        >
-          <button type="submit" class="text-sm px-3 py-1 rounded bg-red-600 text-white hover:bg-red-700">
-            Cancel
-          </button>
-        </form>
-      <% } %>
+        <% if (event.canCancel) { %>
+          <form
+            hx-post="/events/<%= event.id %>/cancel"
+            hx-target="#event-list"
+            hx-swap="innerHTML"
+          >
+            <button type="submit" class="text-sm px-3 py-1 rounded bg-red-600 text-white hover:bg-red-700">
+              Cancel
+            </button>
+          </form>
+        <% } %>
+      </div>
     </div>
-  </div>
-</li>
+  </li>
+<% } %>

@@ -1,9 +1,20 @@
 import type { Rsvp, RsvpStatus } from "../model/Rsvp";
-import { IRsvpRepository } from "./RsvpRepository";
+import type { IEvent } from "../model/Event";
+import { IRsvpRepository, type RsvpWithEvent } from "./RsvpRepository";
+
+type EventSummary = Pick<
+  IEvent,
+  "id" | "title" | "location" | "startDatetime" | "endDatetime" | "category" | "status"
+>;
 
 class InMemoryRsvpRepository implements IRsvpRepository {
   private readonly rsvps = new Map<string, Rsvp>();
+  private readonly eventStubs = new Map<string, EventSummary>();
   private nextId = 1;
+
+  upsertEventStub(event: EventSummary): void {
+    this.eventStubs.set(event.id, event);
+  }
 
   async findByEventAndUser(eventId: string, userId: string): Promise<Rsvp | null> {
     for (const rsvp of this.rsvps.values()) {
@@ -52,6 +63,34 @@ class InMemoryRsvpRepository implements IRsvpRepository {
     }
 
     return matches;
+  }
+
+  async findByUserId(userId: string): Promise<RsvpWithEvent[]> {
+    const results: RsvpWithEvent[] = [];
+
+    for (const rsvp of this.rsvps.values()) {
+      if (rsvp.userId !== userId) continue;
+
+      const event = this.eventStubs.get(rsvp.eventId);
+      if (!event) continue;
+
+      results.push({ ...rsvp, event });
+    }
+
+    results.sort(
+      (a, b) => new Date(a.event.startDatetime).getTime() - new Date(b.event.startDatetime).getTime()
+    );
+
+    return results;
+  }
+
+  async save(rsvp: Rsvp): Promise<Rsvp> {
+    this.rsvps.set(rsvp.id, rsvp);
+    return rsvp;
+  }
+
+  async delete(id: string): Promise<void> {
+    this.rsvps.delete(id);
   }
 
   async countGoingByEvent(eventId: string): Promise<number> {

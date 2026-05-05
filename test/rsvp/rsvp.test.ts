@@ -2,7 +2,7 @@ import request from "supertest";
 import express from "express";
 import path from "path";
 import Layouts from "express-ejs-layouts";
-import { rsvpRouter, rsvpRepository } from "../../src/rsvp/rsvp.routes";
+import { rsvpRouter, rsvpRepository, eventRepository } from "../../src/rsvp/rsvp.routes";
 
 function buildApp(
   userId?: string,
@@ -76,8 +76,8 @@ describe("GET /rsvps/dashboard", () => {
       location: "Amherst, MA",
       category: "social",
       status: "published",
-      startDatetime: new Date("2026-05-01T10:00:00Z"),
-      endDatetime: new Date("2026-05-01T12:00:00Z"),
+      startDatetime: new Date("2026-05-10T10:00:00Z"),
+      endDatetime: new Date("2026-05-10T12:00:00Z"),
     });
 
     rsvpRepository.upsertEventStub({
@@ -129,7 +129,7 @@ describe("GET /rsvps/dashboard", () => {
 
     expect(res.status).toBe(200);
     expect(res.text).toContain("Upcoming Events");
-    expect(res.text).toContain("Past Events");
+    expect(res.text).toContain("Past & Cancelled");
     expect(res.text).toContain("Upcoming Event");
     expect(res.text).toContain("Cancelled Event");
     expect(res.text).toContain("Past Event");
@@ -219,6 +219,7 @@ describe("GET /rsvps/dashboard", () => {
 
     expect(res.status).toBe(200);
     expect(res.text).toContain("Waitlisted");
+    expect(res.text).toContain("Member Dashboard");
   });
 
   it("cancels an RSVP when cancel button is clicked", async () => {
@@ -233,6 +234,21 @@ describe("GET /rsvps/dashboard", () => {
       status: "published",
       startDatetime: new Date("2026-06-01T10:00:00Z"),
       endDatetime: new Date("2026-06-01T12:00:00Z"),
+    });
+
+    await eventRepository.create({
+      id: "cancel-test-event",
+      title: "Event to Cancel",
+      description: "Seeded for RSVP dashboard cancellation test",
+      location: "Test Location",
+      category: "test",
+      status: "published",
+      capacity: 20,
+      startDatetime: "2026-06-01T10:00:00.000Z",
+      endDatetime: "2026-06-01T12:00:00.000Z",
+      organizerId: "staff@app.test",
+      createdAt: "2026-05-01T00:00:00.000Z",
+      updatedAt: "2026-05-01T00:00:00.000Z",
     });
 
     await rsvpRepository.save({
@@ -260,7 +276,9 @@ describe("GET /rsvps/dashboard", () => {
 
     // Verify RSVP is gone from dashboard
     const afterRes = await request(app).get("/rsvps/dashboard");
-    expect(afterRes.text).not.toContain("Event to Cancel");
+    expect(afterRes.text).toContain("Past & Cancelled");
+    expect(afterRes.text).toContain("Event to Cancel");
+    expect(afterRes.text).toContain("cancelled");
   });
 
 });

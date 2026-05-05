@@ -4,6 +4,7 @@ import type { IAppBrowserSession } from "../session/AppSession";
 import { type EventError } from "../events/errors";
 import { EventService } from "../service/EventService";
 import type { IRsvpService } from "../service/RsvpService";
+import type { OrganizerDashboardEvent } from "../event/EventService";
 import { ParsedQs } from "qs";
 
 export interface ShowEventDetailInput {
@@ -127,7 +128,8 @@ class EventController implements IEventController {
       : typeof hxTargetHeader === "string"
         ? hxTargetHeader
         : "";
-    return hxRequest && hxTarget.startsWith("organizer-event-");
+    const normalized = hxTarget.startsWith("#") ? hxTarget.slice(1) : hxTarget;
+    return hxRequest && normalized.startsWith("organizer-event-");
   }
 
   private organizerSectionIdForStatus(status: string, _endDatetime: string): string {
@@ -156,6 +158,27 @@ class EventController implements IEventController {
     }
 
     return null;
+  }
+
+  private groupOrganizerDashboardEvents(events: OrganizerDashboardEvent[]) {
+    return {
+      published: events.filter((event) => event.statusGroup === "published"),
+      draft: events.filter((event) => event.statusGroup === "draft"),
+      cancelledOrPast: events.filter((event) => event.statusGroup === "cancelledOrPast"),
+    };
+  }
+
+  private isOrganizerDashboardRefreshRequest(req: Request): boolean {
+    const hxRequest = req.headers["hx-request"] === "true";
+    const hxTargetHeader = req.headers["hx-target"];
+    const hxTarget = Array.isArray(hxTargetHeader)
+      ? hxTargetHeader[0]
+      : typeof hxTargetHeader === "string"
+        ? hxTargetHeader
+        : "";
+    const normalized = hxTarget.startsWith("#") ? hxTarget.slice(1) : hxTarget;
+
+    return hxRequest && normalized === "event-list";
   }
   
   async createEventFromForm(
@@ -461,17 +484,26 @@ class EventController implements IEventController {
       return;
     }
 
-    if (this.isOrganizerDashboardRowRequest(req)) {
-      const sectionId = this.organizerSectionIdForStatus(
-        result.value.status,
-        result.value.endDatetime
-      );
-
-      res.status(200).render("organizer/partials/event-row", {
-        event: result.value,
+    if (this.isOrganizerDashboardRefreshRequest(req)) {
+      const dashboardResult = await this.service.getEventsForOrganizer({
+        actingUserId: input.actingUserId,
         actingUserRole: input.actingUserRole,
-        oobTarget: sectionId,
-        oobDeleteEmptyStateId: this.organizerEmptyStateId(sectionId),
+      });
+
+      if (!dashboardResult.ok) {
+        const error = dashboardResult.value as EventError;
+        const status = this.mapErrorStatus(error);
+
+        res.status(status).render("partials/error", {
+          message: error.message,
+          layout: false,
+        });
+        return;
+      }
+
+      res.status(200).render("organizer/partials/event-list", {
+        groupedEvents: this.groupOrganizerDashboardEvents(dashboardResult.value),
+        actingUserRole: input.actingUserRole,
         layout: false,
       });
       return;
@@ -501,17 +533,26 @@ class EventController implements IEventController {
       return;
     }
 
-    if (this.isOrganizerDashboardRowRequest(req)) {
-      const sectionId = this.organizerSectionIdForStatus(
-        result.value.status,
-        result.value.endDatetime
-      );
-
-      res.status(200).render("organizer/partials/event-row", {
-        event: result.value,
+    if (this.isOrganizerDashboardRefreshRequest(req)) {
+      const dashboardResult = await this.service.getEventsForOrganizer({
+        actingUserId: input.actingUserId,
         actingUserRole: input.actingUserRole,
-        oobTarget: sectionId,
-        oobDeleteEmptyStateId: this.organizerEmptyStateId(sectionId),
+      });
+
+      if (!dashboardResult.ok) {
+        const error = dashboardResult.value as EventError;
+        const status = this.mapErrorStatus(error);
+
+        res.status(status).render("partials/error", {
+          message: error.message,
+          layout: false,
+        });
+        return;
+      }
+
+      res.status(200).render("organizer/partials/event-list", {
+        groupedEvents: this.groupOrganizerDashboardEvents(dashboardResult.value),
+        actingUserRole: input.actingUserRole,
         layout: false,
       });
       return;

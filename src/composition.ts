@@ -36,6 +36,26 @@ export function createComposedApp(logger?: ILoggingService): IApp {
     adapter: new PrismaBetterSqlite3({ url: process.env.DATABASE_URL ?? "file:./prisma/dev.db" }),
   });
 
+// Seed a published test event for RSVP testing
+  prisma.event.upsert({
+  where: { id: "test-event-rsvp" },
+  update: {},
+  create: {
+    id: "test-event-rsvp",
+    title: "Test RSVP Event",
+    description: "For testing RSVP toggle and waitlist",
+    location: "Student Union",
+    category: "Social",
+    status: "published",
+    capacity: 2,
+    startDatetime: "2099-06-01T18:00:00.000Z",
+    endDatetime: "2099-06-01T20:00:00.000Z",
+    organizerId: "user-staff",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+}).catch(console.error);
+
   // Event wiring (Prisma-backed)
   const eventRepository = CreatePrismaEventRepository(prisma);
   const eventService = new EventService(eventRepository);

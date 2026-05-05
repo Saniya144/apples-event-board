@@ -95,6 +95,8 @@ class RsvpController implements IRsvpController {
         eventId,
         rsvpStatus: result.value.status,
         rsvpError: null,
+        attendeeCount: result.value.attendeeCount,
+        capacity: result.value.event.capacity ?? null,
         layout: false,
       });
       return;

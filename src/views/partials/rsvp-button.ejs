@@ -47,3 +47,15 @@
     <p class="text-sm text-red-600 mt-2"><%= rsvpError %></p>
   <% } %>
 </div>
+
+<% if (typeof attendeeCount !== 'undefined' && attendeeCount !== null) { %>
+<div id="attendance-count" hx-swap-oob="true" class="rounded-lg border p-4 md:col-span-2">
+  <p class="text-sm font-medium text-gray-500 mb-1">Attendance</p>
+  <p class="text-lg font-semibold">
+    <%= attendeeCount %>
+    <% if (typeof capacity !== 'undefined' && capacity !== null) { %>
+      / <%= capacity %>
+    <% } %>
+  </p>
+</div>
+<% } %>

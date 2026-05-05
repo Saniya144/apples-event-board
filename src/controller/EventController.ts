@@ -405,6 +405,7 @@ class EventController implements IEventController {
         input.eventId,
         input.actingUserId
       );
+      var attendeeCount = await this.rsvpService.getAttendeeCount(input.eventId);
     } catch (err) {
       res.status(500).render('partials/error', { message: 'Unexpected server error.', layout: false });
       return;
@@ -416,6 +417,7 @@ class EventController implements IEventController {
       pageError: null,
       waitlistPosition,
       currentUserRsvpStatus,
+      attendeeCount,
     });
   }
 

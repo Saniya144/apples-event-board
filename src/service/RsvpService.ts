@@ -9,7 +9,7 @@ export type RsvpServiceError = EventNotFoundError | RsvpNotAllowedError;
 
 export type RsvpEventSummary = Pick<
   IEvent,
-  "id" | "title" | "location" | "startDatetime" | "endDatetime" | "category" | "status"
+  "id" | "title" | "location" | "startDatetime" | "endDatetime" | "category" | "status" | "capacity"
 >;
 
 export type RsvpToggleResult = {
@@ -35,6 +35,8 @@ export interface IRsvpService {
 
   getRSVPsForUser(userId: string): Promise<Result<RsvpWithEvent[], RsvpServiceError>>;
 
+  getAttendeeCount(eventId: string): Promise<number>;
+
 }
 
 class RsvpService implements IRsvpService {
@@ -49,6 +51,10 @@ class RsvpService implements IRsvpService {
 ): Promise<RsvpStatus | null> {
   const rsvp = await this.rsvpRepository.findByEventAndUser(eventId, userId);
   return rsvp ? rsvp.status : null;
+}
+
+async getAttendeeCount(eventId: string): Promise<number> {
+  return this.rsvpRepository.countGoingByEvent(eventId);
 }
 
   async toggleRSVP(
@@ -112,6 +118,7 @@ class RsvpService implements IRsvpService {
           endDatetime: event.endDatetime,
           category: event.category,
           status: event.status,
+          capacity: event.capacity,
         },
       });
     }
@@ -150,6 +157,7 @@ class RsvpService implements IRsvpService {
           endDatetime: event.endDatetime,
           category: event.category,
           status: event.status,
+          capacity: event.capacity,
         },
       });
     }
@@ -179,6 +187,7 @@ class RsvpService implements IRsvpService {
         endDatetime: event.endDatetime,
         category: event.category,
         status: event.status,
+        capacity: event.capacity,
       },
     });
   }

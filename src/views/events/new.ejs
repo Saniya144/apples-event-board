@@ -10,7 +10,6 @@
     novalidate
     class="space-y-5 bg-white border border-slate-200 rounded-xl shadow-sm p-6"
   >
-    
     <div>
       <label for="title" class="block text-sm font-medium text-slate-700 mb-1">Title</label>
       <input
@@ -44,6 +43,18 @@
       />
     </div>
 
+    <div>
+      <label for="capacity" class="block text-sm font-medium text-slate-700 mb-1">Capacity</label>
+      <input
+        id="capacity"
+        name="capacity"
+        type="number"
+        min="1"
+        placeholder="e.g. 50"
+        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      />
+    </div>
+
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div>
         <label for="startTime" class="block text-sm font-medium text-slate-700 mb-1">Start Time</label>
@@ -65,7 +76,6 @@
       </div>
     </div>
 
-    
     <div x-data="{ count: 0, max: 500 }">
       <label for="description" class="block text-sm font-medium text-slate-700 mb-1">Description</label>
       <textarea
@@ -85,9 +95,8 @@
       </p>
     </div>
 
-    
     <div class="flex items-center justify-between pt-2">
-      <a href="/home" class="text-sm text-blue-700 hover:underline">← Back to Dashboard</a>
+      <a href="/home" class="text-sm text-blue-700 hover:underline">&larr; Back to Dashboard</a>
       <button
         type="submit"
         class="px-5 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-medium shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"

@@ -10,6 +10,7 @@
     novalidate
     x-data="{ dirty: false, count: <%= (event.description || '').length %>, max: 500 }"
     x-on:input="dirty = true"
+    x-on:submit="dirty = false"
     x-on:beforeunload.window="if (dirty) $event.preventDefault()"
     class="space-y-5 bg-white border border-slate-200 rounded-xl shadow-sm p-6"
   >

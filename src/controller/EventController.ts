@@ -200,7 +200,11 @@ class EventController implements IEventController {
       return;
     }
 
-    res.redirect("/home");
+    if (res.req.get("HX-Request") === "true") {
+      res.set("HX-Redirect", "/home").status(200).send();
+    } else {
+      res.redirect("/home");
+    }
   }
 
   async getAllEvents(
@@ -465,7 +469,11 @@ class EventController implements IEventController {
       return;
     }
 
-    res.redirect("/home");
+    if (res.req.get("HX-Request") === "true") {
+      res.set("HX-Redirect", "/home").status(200).send();
+    } else {
+      res.redirect("/home");
+    }
   }
 
   async publishEvent(req: Request, res: Response, input: LifecycleEventInput): Promise<void> {

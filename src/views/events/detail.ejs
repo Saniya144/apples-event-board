@@ -87,8 +87,9 @@
       <% if (event.canRsvp) { %>
         <%- include('../partials/rsvp-button', {
           eventId: event.id,
-          rsvpStatus: event.currentUserRsvpStatus,
-          rsvpError: null
+          rsvpStatus: currentUserRsvpStatus,
+          rsvpError: null,
+          attendeeCount: null
         }) %>
         <% if (waitlistPosition !== null && waitlistPosition !== undefined) { %>
           <p class="text-xs text-slate-500 mt-1">

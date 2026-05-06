@@ -58,10 +58,16 @@
     <h2 class="text-lg font-semibold text-slate-900 mb-4">Actions</h2>
 
     <% if (waitlistPosition !== null && waitlistPosition !== undefined) { %>
-      <div class="rounded-lg border border-yellow-300 bg-yellow-50 p-4 text-sm text-yellow-800 mb-4">
-        <p class="font-semibold">You are on the waitlist</p>
-        <p>Your current position: <strong>#<%= waitlistPosition %></strong></p>
-        <p class="text-xs mt-1 text-yellow-600">You will be automatically promoted if a spot opens up.</p>
+      <div class="flex items-stretch gap-0 rounded-xl overflow-hidden border border-amber-300 bg-amber-50 mb-4 shadow-sm">
+        <div class="w-1.5 bg-amber-400 shrink-0"></div>
+        <div class="flex items-center gap-4 px-5 py-4 w-full">
+          <div class="text-3xl leading-none select-none">⏳</div>
+          <div class="flex-1">
+            <p class="text-sm font-semibold text-amber-900 uppercase tracking-wide">Waitlist Position</p>
+            <p class="text-4xl font-extrabold text-amber-700 leading-tight">#<%= waitlistPosition %></p>
+            <p class="text-xs text-amber-700 mt-1">You'll be automatically promoted if a spot opens up.</p>
+          </div>
+        </div>
       </div>
     <% } %>
 
@@ -91,11 +97,6 @@
           rsvpError: null,
           attendeeCount: null
         }) %>
-        <% if (waitlistPosition !== null && waitlistPosition !== undefined) { %>
-          <p class="text-xs text-slate-500 mt-1">
-            You are currently <strong>#<%= waitlistPosition %></strong> on the waitlist.
-          </p>
-        <% } %>
       <% } %>
     </div>
   </div>

@@ -6,7 +6,12 @@
       description: "Live events that attendees can RSVP to.",
       events: groupedEvents.published,
       emptyMessage: "No published events yet.",
-      sectionClass: "border-green-200 bg-green-50/50",
+      sectionClass:
+        "border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-emerald-100/70 shadow-sm",
+      headerClass: "text-emerald-900",
+      descriptionClass: "text-emerald-700/80",
+      countClass: "bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200",
+      bodyClass: "border-l-4 border-emerald-400",
     },
     {
       key: "draft",
@@ -14,7 +19,12 @@
       description: "Work-in-progress events not visible to members.",
       events: groupedEvents.draft,
       emptyMessage: "No draft events.",
-      sectionClass: "border-slate-200 bg-slate-50/60",
+      sectionClass:
+        "border-amber-200 bg-gradient-to-br from-amber-50 via-white to-amber-100/70 shadow-sm",
+      headerClass: "text-amber-900",
+      descriptionClass: "text-amber-700/80",
+      countClass: "bg-amber-100 text-amber-800 ring-1 ring-amber-200",
+      bodyClass: "border-l-4 border-amber-400",
     },
     {
       key: "cancelledOrPast",
@@ -22,7 +32,13 @@
       description: "Archived events with no active attendance updates.",
       events: groupedEvents.cancelledOrPast,
       emptyMessage: "No cancelled or past events.",
-      sectionClass: "border-red-200 bg-red-50/40",
+      sectionClass:
+        "border-slate-200 bg-gradient-to-br from-slate-100 via-white to-slate-200/60 shadow-sm",
+      headerClass: "text-slate-900",
+      descriptionClass: "text-slate-600",
+      countClass: "bg-slate-200 text-slate-700 ring-1 ring-slate-300",
+      bodyClass: "border-l-4 border-slate-400",
+      collapsible: true,
     },
   ];
 
@@ -34,26 +50,42 @@
 <% } else { %>
   <div class="space-y-6">
     <% sections.forEach((section) => { %>
-      <section class="border rounded-xl p-4 <%= section.sectionClass %>">
-        <div class="flex items-baseline justify-between gap-4 mb-3">
+      <section class="border rounded-2xl overflow-hidden <%= section.sectionClass %>" <%= section.collapsible ? 'x-data="{ open: false }"' : "" %>>
+        <div class="flex items-start justify-between gap-4 p-4 sm:p-5 border-b border-black/5">
           <div>
-            <h2 class="text-lg font-semibold"><%= section.title %></h2>
-            <p class="text-sm text-gray-500"><%= section.description %></p>
+            <h2 class="text-lg font-semibold <%= section.headerClass %>"><%= section.title %></h2>
+            <p class="text-sm <%= section.descriptionClass %>"><%= section.description %></p>
           </div>
-          <span class="text-xs font-semibold uppercase tracking-wide text-gray-600">
-            <%= section.events.length %> event<%= section.events.length === 1 ? "" : "s" %>
-          </span>
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full <%= section.countClass %>">
+              <%= section.events.length %> event<%= section.events.length === 1 ? "" : "s" %>
+            </span>
+
+            <% if (section.collapsible) { %>
+              <button
+                type="button"
+                class="text-xs font-semibold uppercase tracking-wide px-3 py-1.5 rounded-full border border-slate-300 bg-white/90 text-slate-700 hover:bg-slate-50 transition"
+                @click="open = !open"
+                :aria-expanded="open.toString()"
+              >
+                <span x-show="!open" x-cloak>Expand</span>
+                <span x-show="open" x-cloak>Collapse</span>
+              </button>
+            <% } %>
+          </div>
         </div>
 
-        <% if (section.events.length === 0) { %>
-          <p id="<%= section.key %>-empty-state" class="text-sm text-gray-500"><%= section.emptyMessage %></p>
-        <% } else { %>
-          <ul id="<%= section.key %>-events" class="space-y-3">
-            <% section.events.forEach((event) => { %>
-              <%- include('event-row', { event, actingUserRole }) %>
-            <% }) %>
-          </ul>
-        <% } %>
+        <div class="p-4 sm:p-5 <%= section.bodyClass %>" <%= section.collapsible ? 'x-show="open" x-cloak x-transition.opacity.duration.150ms' : "" %>>
+          <% if (section.events.length === 0) { %>
+            <p id="<%= section.key %>-empty-state" class="text-sm text-gray-500"><%= section.emptyMessage %></p>
+          <% } else { %>
+            <ul id="<%= section.key %>-events" class="space-y-3">
+              <% section.events.forEach((event) => { %>
+                <%- include('event-row', { event, actingUserRole }) %>
+              <% }) %>
+            </ul>
+          <% } %>
+        </div>
       </section>
     <% }) %>
   </div>

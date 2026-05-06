@@ -109,21 +109,21 @@ describe("GET /organizer/dashboard", () => {
       eventId: "event-2",
       userId: "user-1",
       status: "going",
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
     });
     await rsvpRepository.save({
       id: "rsvp-2",
       eventId: "event-2",
       userId: "user-2",
       status: "going",
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
     });
     await rsvpRepository.save({
       id: "rsvp-3",
       eventId: "event-2",
       userId: "user-3",
       status: "waitlisted",
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
     });
 
     const res = await request(app).get("/organizer/dashboard");

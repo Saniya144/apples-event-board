@@ -57,19 +57,17 @@
   <div class="bg-white rounded-xl shadow p-6">
     <h2 class="text-lg font-semibold text-slate-900 mb-4">Actions</h2>
 
-    <% if (waitlistPosition !== null && waitlistPosition !== undefined) { %>
-      <div class="flex items-stretch gap-0 rounded-xl overflow-hidden border border-amber-300 bg-amber-50 mb-4 shadow-sm">
-        <div class="w-1.5 bg-amber-400 shrink-0"></div>
-        <div class="flex items-center gap-4 px-5 py-4 w-full">
-          <div class="text-3xl leading-none select-none">⏳</div>
-          <div class="flex-1">
-            <p class="text-sm font-semibold text-amber-900 uppercase tracking-wide">Waitlist Position</p>
-            <p class="text-4xl font-extrabold text-amber-700 leading-tight">#<%= waitlistPosition %></p>
-            <p class="text-xs text-amber-700 mt-1">You'll be automatically promoted if a spot opens up.</p>
-          </div>
-        </div>
-      </div>
-    <% } %>
+    <div id="rsvp-actions-section">
+      <% if (event.canRsvp) { %>
+        <%- include('../partials/rsvp-button', {
+          eventId: event.id,
+          rsvpStatus: currentUserRsvpStatus,
+          rsvpError: null,
+          attendeeCount: null,
+          waitlistPosition: waitlistPosition
+        }) %>
+      <% } %>
+    </div>
 
     <div class="flex flex-wrap gap-3">
       <% if (event.canEdit) { %>
@@ -88,15 +86,6 @@
         <button class="rounded-lg bg-green-600 text-white px-4 py-2 opacity-60 cursor-not-allowed" disabled>
           Publish Event
         </button>
-      <% } %>
-
-      <% if (event.canRsvp) { %>
-        <%- include('../partials/rsvp-button', {
-          eventId: event.id,
-          rsvpStatus: currentUserRsvpStatus,
-          rsvpError: null,
-          attendeeCount: null
-        }) %>
       <% } %>
     </div>
   </div>

@@ -1,10 +1,24 @@
+<% if (typeof waitlistPosition !== 'undefined' && waitlistPosition !== null) { %>
+  <div class="flex items-stretch gap-0 rounded-xl overflow-hidden border border-amber-300 bg-amber-50 mb-4 shadow-sm">
+    <div class="w-1.5 bg-amber-400 shrink-0"></div>
+    <div class="flex items-center gap-4 px-5 py-4 w-full">
+      <div class="text-3xl leading-none select-none">⏳</div>
+      <div class="flex-1">
+        <p class="text-sm font-semibold text-amber-900 uppercase tracking-wide">Waitlist Position</p>
+        <p class="text-4xl font-extrabold text-amber-700 leading-tight">#<%= waitlistPosition %></p>
+        <p class="text-xs text-amber-700 mt-1">You'll be automatically promoted if a spot opens up.</p>
+      </div>
+    </div>
+  </div>
+<% } %>
+
 <div id="rsvp-section"
   x-data="{ status: '<%= rsvpStatus ?? 'none' %>', loading: false }"
 >
   <form
     hx-post="/events/<%= eventId %>/rsvp"
-    hx-target="#rsvp-section"
-    hx-swap="outerHTML"
+    hx-target="#rsvp-actions-section"
+    hx-swap="innerHTML"
     @htmx:before-request="loading = true"
   >
     <button

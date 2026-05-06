@@ -91,12 +91,14 @@ class RsvpController implements IRsvpController {
 
     const isHtmx = req.get("HX-Request") === "true";
     if (isHtmx) {
+      const waitlistPosition = await this.rsvpService.getWaitlistPosition(eventId, userId);
       res.status(200).render("partials/rsvp-button", {
         eventId,
         rsvpStatus: result.value.status,
         rsvpError: null,
         attendeeCount: result.value.attendeeCount,
         capacity: result.value.event.capacity ?? null,
+        waitlistPosition,
         layout: false,
       });
       return;

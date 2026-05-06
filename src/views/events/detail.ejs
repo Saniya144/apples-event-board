@@ -57,13 +57,17 @@
   <div class="bg-white rounded-xl shadow p-6">
     <h2 class="text-lg font-semibold text-slate-900 mb-4">Actions</h2>
 
-    <% if (waitlistPosition !== null && waitlistPosition !== undefined) { %>
-      <div class="rounded-lg border border-yellow-300 bg-yellow-50 p-4 text-sm text-yellow-800 mb-4">
-        <p class="font-semibold">You are on the waitlist</p>
-        <p>Your current position: <strong>#<%= waitlistPosition %></strong></p>
-        <p class="text-xs mt-1 text-yellow-600">You will be automatically promoted if a spot opens up.</p>
-      </div>
-    <% } %>
+    <div id="rsvp-actions-section">
+      <% if (event.canRsvp) { %>
+        <%- include('../partials/rsvp-button', {
+          eventId: event.id,
+          rsvpStatus: currentUserRsvpStatus,
+          rsvpError: null,
+          attendeeCount: null,
+          waitlistPosition: waitlistPosition
+        }) %>
+      <% } %>
+    </div>
 
     <div class="flex flex-wrap gap-3">
       <% if (event.canEdit) { %>
@@ -82,20 +86,6 @@
         <button class="rounded-lg bg-green-600 text-white px-4 py-2 opacity-60 cursor-not-allowed" disabled>
           Publish Event
         </button>
-      <% } %>
-
-      <% if (event.canRsvp) { %>
-        <%- include('../partials/rsvp-button', {
-          eventId: event.id,
-          rsvpStatus: currentUserRsvpStatus,
-          rsvpError: null,
-          attendeeCount: null
-        }) %>
-        <% if (waitlistPosition !== null && waitlistPosition !== undefined) { %>
-          <p class="text-xs text-slate-500 mt-1">
-            You are currently <strong>#<%= waitlistPosition %></strong> on the waitlist.
-          </p>
-        <% } %>
       <% } %>
     </div>
   </div>

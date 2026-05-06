@@ -159,13 +159,17 @@
   <div id="lifecycle-controls" class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
     <h2 class="text-base font-semibold text-slate-900 mb-4">Actions</h2>
 
-    <% if (waitlistPosition !== null && waitlistPosition !== undefined) { %>
-      <div class="rounded-lg border border-yellow-300 bg-yellow-50 p-4 text-sm text-yellow-800 mb-4">
-        <p class="font-semibold">You are on the waitlist</p>
-        <p>Your current position: <strong>#<%= waitlistPosition %></strong></p>
-        <p class="text-xs mt-1 text-yellow-600">You will be automatically promoted if a spot opens up.</p>
-      </div>
-    <% } %>
+    <div id="rsvp-actions-section">
+      <% if (event.canRsvp) { %>
+        <%- include('../partials/rsvp-button', {
+          eventId: event.id,
+          rsvpStatus: currentUserRsvpStatus,
+          rsvpError: null,
+          attendeeCount: null,
+          waitlistPosition: waitlistPosition
+        }) %>
+      <% } %>
+    </div>
 
     <div class="flex flex-wrap gap-3">
 

@@ -109,21 +109,21 @@ describe("GET /organizer/dashboard", () => {
       eventId: "event-2",
       userId: "user-1",
       status: "going",
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
     });
     await rsvpRepository.save({
       id: "rsvp-2",
       eventId: "event-2",
       userId: "user-2",
       status: "going",
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
     });
     await rsvpRepository.save({
       id: "rsvp-3",
       eventId: "event-2",
       userId: "user-3",
       status: "waitlisted",
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
     });
 
     const res = await request(app).get("/organizer/dashboard");
@@ -165,12 +165,12 @@ describe("GET /organizer/dashboard", () => {
     const res = await request(app)
       .post("/events/future-draft-event/publish")
       .set("HX-Request", "true")
-      .set("HX-Target", "organizer-event-future-draft-event");
+      .set("HX-Target", "event-list");
 
     expect(res.status).toBe(200);
-    expect(res.text).toContain('hx-swap-oob="beforeend:#published-events"');
-    expect(res.text).toContain('id="organizer-event-future-draft-event"');
-    expect(res.text).toContain('hx-swap-oob="delete"');
+    expect(res.text).toContain("Published");
+    expect(res.text).toContain("Future Draft Event");
+    expect(res.text).toContain("Draft");
   });
 
   it("moves a published event into the cancelled-or-past section via HTMX", async () => {
@@ -179,11 +179,10 @@ describe("GET /organizer/dashboard", () => {
     const res = await request(app)
       .post("/events/event-2/cancel")
       .set("HX-Request", "true")
-      .set("HX-Target", "organizer-event-event-2");
+      .set("HX-Target", "event-list");
 
     expect(res.status).toBe(200);
-    expect(res.text).toContain('hx-swap-oob="beforeend:#cancelled-or-past-events"');
-    expect(res.text).toContain('id="organizer-event-event-2"');
-    expect(res.text).toContain('hx-swap-oob="delete"');
+    expect(res.text).toContain("Cancelled Or Past");
+    expect(res.text).toContain("Open Mic Night");
   });
 });

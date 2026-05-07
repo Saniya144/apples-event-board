@@ -1,26 +1,108 @@
-<h1>  Create Event</h1>
-<div id="form-error"></div>
+<div class="max-w-2xl mx-auto">
+  <h1 class="text-2xl font-bold text-slate-900 mb-6">Create Event</h1>
 
-<form
-  hx-post="/events/new"
-  hx-target="#form-error"
-  hx-swap="innerHTML"
-  
->
-  <input name = "title" placeholder="Title" />
-  <br /><br />
-  <input name = "location" placeholder="Location" />
-  <br /><br />
-  <input name="category" placeholder="Category" />
-  <br /><br />
-  <input type = "datetime-local" name="startTime" />
-  <br /><br />
-  <input type = "datetime-local" name="endTime" />
-  <br /><br />
-  <input name = "description" placeholder="Description"/>
-  <br /><br />
-  <button type ="submit">Create Event</button>
+  <div id="form-error"></div>
 
-</form>
-<br />
-<a href="/home">← Back to Dashboard</a>
+  <form
+    hx-post="/events/new"
+    hx-target="#form-error"
+    hx-swap="innerHTML"
+    novalidate
+    class="space-y-5 bg-white border border-slate-200 rounded-xl shadow-sm p-6"
+  >
+    <div>
+      <label for="title" class="block text-sm font-medium text-slate-700 mb-1">Title</label>
+      <input
+        id="title"
+        name="title"
+        type="text"
+        placeholder="e.g. Hackathon"
+        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      />
+    </div>
+
+    <div>
+      <label for="location" class="block text-sm font-medium text-slate-700 mb-1">Location</label>
+      <input
+        id="location"
+        name="location"
+        type="text"
+        placeholder="e.g. Room 126, Hasbrouck"
+        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      />
+    </div>
+
+    <div>
+      <label for="category" class="block text-sm font-medium text-slate-700 mb-1">Category</label>
+      <input
+        id="category"
+        name="category"
+        type="text"
+        placeholder="e.g. GBM"
+        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      />
+    </div>
+
+    <div>
+      <label for="capacity" class="block text-sm font-medium text-slate-700 mb-1">Capacity</label>
+      <input
+        id="capacity"
+        name="capacity"
+        type="number"
+        min="1"
+        placeholder="e.g. 50"
+        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      />
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label for="startTime" class="block text-sm font-medium text-slate-700 mb-1">Start Time</label>
+        <input
+          id="startTime"
+          name="startTime"
+          type="datetime-local"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        />
+      </div>
+      <div>
+        <label for="endTime" class="block text-sm font-medium text-slate-700 mb-1">End Time</label>
+        <input
+          id="endTime"
+          name="endTime"
+          type="datetime-local"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        />
+      </div>
+    </div>
+
+    <div x-data="{ count: 0, max: 500 }">
+      <label for="description" class="block text-sm font-medium text-slate-700 mb-1">Description</label>
+      <textarea
+        id="description"
+        name="description"
+        rows="4"
+        placeholder="Describe your event…"
+        :maxlength="max"
+        x-on:input="count = $el.value.length"
+        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y"
+      ></textarea>
+      <p
+        class="mt-1 text-xs text-right"
+        :class="count >= max ? 'text-red-600 font-semibold' : 'text-slate-400'"
+      >
+        <span x-text="count"></span> / <span x-text="max"></span>
+      </p>
+    </div>
+
+    <div class="flex items-center justify-between pt-2">
+      <a href="/home" class="text-sm text-blue-700 hover:underline">&larr; Back to Dashboard</a>
+      <button
+        type="submit"
+        class="px-5 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-medium shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"
+      >
+        Create Event
+      </button>
+    </div>
+  </form>
+</div>

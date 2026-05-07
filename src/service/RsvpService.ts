@@ -1,7 +1,7 @@
 import { Result, Ok, Err } from "../lib/result";
 import type { IEventRepository } from "../repository/EventRepository";
 import type { IEvent } from "../model/Event";
-import type { IRsvpRepository } from "../repository/RsvpRepository";
+import type { IRsvpRepository, RsvpWithEvent } from "../repository/RsvpRepository";
 import type { RsvpStatus } from "../model/Rsvp";
 import { EventNotFoundError, RsvpNotAllowedError } from "../rsvp/errors";
 
@@ -9,7 +9,7 @@ export type RsvpServiceError = EventNotFoundError | RsvpNotAllowedError;
 
 export type RsvpEventSummary = Pick<
   IEvent,
-  "id" | "title" | "location" | "startDatetime" | "endDatetime" | "category" | "status"
+  "id" | "title" | "location" | "startDatetime" | "endDatetime" | "category" | "status" | "capacity"
 >;
 
 export type RsvpToggleResult = {
@@ -32,6 +32,11 @@ export interface IRsvpService {
     eventId: string,
     userId: string
   ): Promise<RsvpStatus | null>;
+
+  getRSVPsForUser(userId: string): Promise<Result<RsvpWithEvent[], RsvpServiceError>>;
+
+  getAttendeeCount(eventId: string): Promise<number>;
+
 }
 
 class RsvpService implements IRsvpService {
@@ -46,6 +51,10 @@ class RsvpService implements IRsvpService {
 ): Promise<RsvpStatus | null> {
   const rsvp = await this.rsvpRepository.findByEventAndUser(eventId, userId);
   return rsvp ? rsvp.status : null;
+}
+
+async getAttendeeCount(eventId: string): Promise<number> {
+  return this.rsvpRepository.countGoingByEvent(eventId);
 }
 
   async toggleRSVP(
@@ -109,6 +118,7 @@ class RsvpService implements IRsvpService {
           endDatetime: event.endDatetime,
           category: event.category,
           status: event.status,
+          capacity: event.capacity,
         },
       });
     }
@@ -147,6 +157,7 @@ class RsvpService implements IRsvpService {
           endDatetime: event.endDatetime,
           category: event.category,
           status: event.status,
+          capacity: event.capacity,
         },
       });
     }
@@ -176,6 +187,7 @@ class RsvpService implements IRsvpService {
         endDatetime: event.endDatetime,
         category: event.category,
         status: event.status,
+        capacity: event.capacity,
       },
     });
   }
@@ -237,6 +249,20 @@ class RsvpService implements IRsvpService {
     // findIndex returns -1 if not found; otherwise return 1-based position
     return position === -1 ? null : position + 1;
   }
+
+  async getRSVPsForUser(
+  userId: string
+): Promise<Result<RsvpWithEvent[], RsvpServiceError>> {
+  if (!userId) {
+    return Err(new RsvpNotAllowedError("User not found."));
+  }
+  try {
+    const rsvps = await this.rsvpRepository.findByUserId(userId);
+    return Ok(rsvps);
+  } catch (e) {
+    return Err(new RsvpNotAllowedError(e instanceof Error ? e.message : "Unknown error"));
+  }
+}
 }
 
 export function CreateRsvpService(

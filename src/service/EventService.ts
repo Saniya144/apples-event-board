@@ -2,6 +2,7 @@ import { Err, Ok, type Result } from "../lib/result";
 import type { IEvent, IEventDetailView } from "../model/Event";
 import type { IEventRepository } from "../repository/EventRepository";
 import type { UserRole } from "../auth/User";
+import type { OrganizerDashboardEvent } from "../event/EventService";
 import {
   EventAuthorizationError,
   EventDependencyError,
@@ -47,6 +48,11 @@ export interface GetEventDetailInput {
 
 export interface TransitionEventInput {
   eventId: string;
+  actingUserId: string;
+  actingUserRole: UserRole;
+}
+
+export interface OrganizerDashboardInput {
   actingUserId: string;
   actingUserRole: UserRole;
 }
@@ -318,6 +324,51 @@ export class EventService {
       canPublish: (isOwner || isAdmin) && event.status === "draft",
       canRsvp: event.status === "published",
     });
+  }
+
+  async getEventsForOrganizer(
+    input: OrganizerDashboardInput
+  ): Promise<Result<OrganizerDashboardEvent[], EventError>> {
+    if (!input.actingUserId) {
+      return Err(EventNotFoundError("Organizer not found."));
+    }
+
+    if (input.actingUserRole === "user") {
+      return Err(
+        EventAuthorizationError("Only staff and admins can access organizer dashboard.")
+      );
+    }
+
+    try {
+      const eventsWithCounts = await this.repo.getAllWithAttendeeCount(
+        input.actingUserRole === "admin" ? undefined : input.actingUserId
+      );
+
+      const eventsWithStats = eventsWithCounts.map((event) => {
+        const statusGroup: OrganizerDashboardEvent["statusGroup"] =
+          event.status === "cancelled"
+            ? "cancelledOrPast"
+            : event.status === "draft"
+              ? "draft"
+              : "published";
+
+        const canManage =
+          input.actingUserRole === "admin" || event.organizerId === input.actingUserId;
+
+        return {
+          ...event,
+          statusGroup,
+          canPublish: canManage && event.status === "draft",
+          canCancel: canManage && event.status === "published",
+        } as OrganizerDashboardEvent;
+      });
+
+      return Ok(eventsWithStats);
+    } catch (error) {
+      return Err(
+        EventDependencyError(error instanceof Error ? error.message : "Unknown error")
+      );
+    }
   }
   async publishEvent(
     input: TransitionEventInput

@@ -1,3 +1,19 @@
+<%
+  const _sc = {
+    draft:     { bg: 'bg-slate-100',  text: 'text-slate-700',  label: 'Draft'     },
+    published: { bg: 'bg-green-100',  text: 'text-green-800',  label: 'Published' },
+    cancelled: { bg: 'bg-red-100',    text: 'text-red-800',    label: 'Cancelled' },
+    past:      { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Past'      },
+  }[event.status] || { bg: 'bg-slate-100', text: 'text-slate-700', label: event.status };
+%>
+<span
+  id="event-status-badge"
+  hx-swap-oob="true"
+  x-data
+  x-init="$el.animate([{opacity:0,transform:'scale(0.85)'},{opacity:1,transform:'scale(1)'}],{duration:300,easing:'ease-out'})"
+  class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold <%= _sc.bg %> <%= _sc.text %>"
+><%= _sc.label %></span>
+
 <div id="lifecycle-controls" class="bg-white rounded-xl shadow p-6">
   <h2 class="text-lg font-semibold text-slate-900 mb-4">Actions</h2>
 

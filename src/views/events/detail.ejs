@@ -234,14 +234,6 @@
         </div>
       <% } %>
 
-      <% if (event.canRsvp) { %>
-        <%- include('../partials/rsvp-button', {
-          eventId: event.id,
-          rsvpStatus: currentUserRsvpStatus,
-          rsvpError: null,
-          attendeeCount: null
-        }) %>
-      <% } %>
 
     </div>
   </div>

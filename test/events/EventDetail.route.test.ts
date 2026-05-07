@@ -172,7 +172,7 @@ describe("GET /events/:id", () => {
 
     expect(res.status).toBe(200);
     expect(res.text).toContain("Board Game Night");
-    expect(res.text).toContain("draft");
+    expect(res.text).toContain("Draft");
   });
 
   it("returns 200 when admin views a draft", async () => {
@@ -187,7 +187,7 @@ describe("GET /events/:id", () => {
 
     expect(res.status).toBe(200);
     expect(res.text).toContain("Board Game Night");
-    expect(res.text).toContain("draft");
+    expect(res.text).toContain("Draft");
   });
 
   it("returns 401 when not authenticated", async () => {

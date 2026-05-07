@@ -41,9 +41,12 @@
   <!-- Header -->
   <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
     <div class="flex items-center gap-3 flex-wrap mb-4">
-      <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold <%= sc.bg %> <%= sc.text %>">
-        <%= sc.label %>
-      </span>
+      <span
+        id="event-status-badge"
+        x-data
+        x-init="$el.animate([{opacity:0,transform:'scale(0.85)'},{opacity:1,transform:'scale(1)'}],{duration:300,easing:'ease-out'})"
+        class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold <%= sc.bg %> <%= sc.text %>"
+      ><%= sc.label %></span>
       <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
         <%= event.category %>
       </span>
